@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>리뷰 상세</title>
+</head>
+<body>
+<h1 th:text="${review.title}"></h1>
+<p><b>작성자:</b> <span th:text="${review.author.username}"></span></p>
+<p><b>평점:</b> <span th:text="${review.rating}"></span></p>
+<p><b>작성일:</b> <span th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+<hr>
+<p th:text="${review.content}"></p>
+
+<form method="post" th:action="@{/reviews/{id}/delete(id=${review.id})}">
+  <button type="submit">삭제</button>
+</form>
+<a href="/reviews">목록으로</a>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>게시판 목록</title>
+</head>
+<body>
+<h1>영화 게시판</h1>
+
+<form method="get" action="/board/search">
+  <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어 입력">
+  <button type="submit">검색</button>
+</form>
+
+<a th:href="@{/board/new}">영화 목록 작성</a>
+<form method="post" th:action="@{/logout}" style="display:inline">
+  <button type="submit">로그아웃</button>
+</form>
+<hr>
+
+<table border="1">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>제목</th>
+    <th>작성자</th>
+    <th>작성일</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="p : ${postPage.content}">
+    <td th:text="${p.id}"></td>
+    <td><a th:href="@{/board/{id}(id=${p.id})}" th:text="${p.title}"></a></td>
+    <td th:text="${p.author != null ? p.author.username : '알 수 없음'}"></td>
+    <td th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+  </tr>
+  </tbody>
+</table>
+
+<div style="margin-top:10px;">
+  <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
+    <a th:if="${i != currentPage}"
+       th:href="@{/board(page=${i})}"
+       th:text="${i + 1}"
+       style="margin:0 3px;"></a>
+    <span th:if="${i == currentPage}"
+          th:text="${i + 1}"
+          style="font-weight:bold; color:red; margin:0 3px;"></span>
+  </span>
+</div>
+</body>
+</html>
