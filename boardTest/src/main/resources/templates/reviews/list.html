@@ -3,39 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>리뷰 목록</title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 <h1>영화 리뷰 목록</h1>
-<a href="/reviews/new">리뷰 작성</a>
-<hr>
+<a href="/reviews/new" class="button-link">리뷰 작성</a>
+<a href="/board" class="button-link">영화 목록</a>
 
-<table border="1">
-  <thead>
-  <tr>
-    <th>ID</th>
-    <th>제목</th>
-    <th>작성자</th>
-    <th>평점</th>
-    <th>작성일</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr th:each="r : ${reviewPage.content}">
-    <td th:text="${r.id}"></td>
-    <td><a th:href="@{/reviews/{id}(id=${r.id})}" th:text="${r.title}"></a></td>
-    <td th:text="${r.author.username}"></td>
-    <td th:text="${r.rating}"></td>
-    <td th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-  </tr>
-  </tbody>
-</table>
-
-<div>
-  <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
-    <a th:if="${i != currentPage}" th:href="@{/reviews(page=${i})}" th:text="${i + 1}"></a>
-    <span th:if="${i == currentPage}" th:text="${i + 1}" style="font-weight:bold; color:red;"></span>
-  </span>
+<div class="card-container">
+  <div class="card" th:each="r : ${reviewPage.content}">
+    <div class="card-body">
+      <h3><a th:href="@{/reviews/{id}(id=${r.id})}" th:text="${r.title}"></a></h3>
+      <p><b>작성자:</b> <span th:text="${r.author.username}"></span></p>
+      <p><b>평점:</b> <span th:text="${r.rating}"></span></p>
+      <p th:text="${#temporals.format(r.createdAt,'yyyy-MM-dd')}"></p>
+    </div>
+  </div>
 </div>
 
+<div class="pagination">
+  <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
+    <a th:if="${i != currentPage}" th:href="@{/reviews(page=${i})}" th:text="${i+1}"></a>
+    <span th:if="${i == currentPage}" th:text="${i+1}"></span>
+  </span>
+</div>
 </body>
 </html>

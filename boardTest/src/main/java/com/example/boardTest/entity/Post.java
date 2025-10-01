@@ -26,4 +26,7 @@ public class Post extends Base{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
     private User author;
+
+    @Column(length=500)
+    private String imageUrl;
 }

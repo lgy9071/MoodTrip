@@ -3,18 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <title>리뷰 작성</title>
+  <style>
+    .rating span { cursor: pointer; font-size: 24px; }
+    .selected { color: gold; }
+  </style>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 <h1>리뷰 작성</h1>
 <form method="post" action="/reviews">
-  <input type="text" name="title" placeholder="영화 제목" required>
-  <br>
-  <textarea name="content" placeholder="후기 내용" required></textarea>
-  <br>
-  평점: <input type="number" name="rating" min="1" max="5" required>
-  <br>
+  <label>영화 선택:</label>
+  <select name="title" required>
+    <option th:each="m : ${movies}" th:value="${m.title}" th:text="${m.title}"></option>
+  </select>
+  <br><br>
+
+  <textarea name="content" placeholder="후기 내용" required></textarea><br><br>
+
+<label>평점 선택:</label>
+<div class="rating">
+  <button type="button" data-value="1">⭐</button>
+  <button type="button" data-value="2">⭐⭐</button>
+  <button type="button" data-value="3">⭐⭐⭐</button>
+  <button type="button" data-value="4">⭐⭐⭐⭐</button>
+  <button type="button" data-value="5">⭐⭐⭐⭐⭐</button>
+</div>
+<input type="hidden" name="rating" id="ratingValue" required>
   <button type="submit">등록</button>
 </form>
-<a href="/reviews">취소</a>
+
+<script>
+  const ratingButtons = document.querySelectorAll('.rating button');
+  const ratingInput = document.getElementById('ratingValue');
+
+  ratingButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.getAttribute('data-value');
+      ratingInput.value = val;
+
+      ratingButtons.forEach(b => b.style.backgroundColor = '');
+      btn.style.backgroundColor = 'gold';
+    });
+  });
+</script>
 </body>
 </html>
