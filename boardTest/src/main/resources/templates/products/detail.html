@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>제품 상세</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<h1 th:text="${product.name}"></h1>
+<img th:if="${product.imageUrl}" th:src="${product.imageUrl}" class="detail-img">
+<p><b>카테고리:</b> <span th:text="${product.category}"></span></p>
+<p><b>가격:</b> <span th:text="${product.price != null ? product.price + '원' : '정보 없음'}"></span></p>
+<p><a th:if="${product.buyLink}" th:href="${product.buyLink}" class="button-link" target="_blank">구매하러 가기</a></p>
+
+<form method="post" th:action="@{/products/{id}/delete(id=${product.id})}" style="display:inline">
+    <button type="submit">삭제</button>
+</form>
+<a href="/products" class="button-link">목록</a>
+
+</body>
+</html>

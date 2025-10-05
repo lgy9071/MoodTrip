@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<h1>상품 등록</h1>
+<form method="post" action="/products">
+    <input type="text" name="name" placeholder="상품명" required>
+    <input type="number" name="price" placeholder="가격(원)">
+    <input type="text" name="category" placeholder="카테고리 (ACCESSORY/CAT 등)">
+    <input type="text" name="imageUrl" placeholder="이미지 URL">
+    <input type="text" name="buyLink" placeholder="구매 링크 URL">
+    <button type="submit">저장</button>
+</form>
+<a href="/products" class="button-link">취소</a>
+
+</body>
+</html>

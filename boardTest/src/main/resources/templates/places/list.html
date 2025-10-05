@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>맛집 리스트</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="header">
+    <form class="search-bar" method="get" action="/places">
+        <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어(카테고리/이름)">
+        <button type="submit">검색</button>
+    </form>
+    <form method="post" action="/logout" class="logout"><button type="submit">로그아웃</button></form>
+</div>
+
+<h1>자기를 위한 맛집</h1>
+<a href="/places/new" class="button-link">맛집 등록</a>
+<a href="/products" class="button-link">용품</a>
+<a href="/trips" class="button-link">여행</a>
+
+<div class="card-container">
+    <div class="card" th:each="p : ${page.content}">
+        <img th:if="${p.imageUrl}" th:src="${p.imageUrl}" class="card-img">
+        <div class="card-body">
+            <h3><a th:href="@{/places/{id}(id=${p.id})}" th:text="${p.name}"></a></h3>
+            <p th:text="${p.category}"></p>
+            <p th:text="${p.address}"></p>
+            <p th:text="${p.rating != null ? ('⭐'.repeat(p.rating)) : ''}"></p>
+        </div>
+    </div>
+</div>
+
+<div class="pagination">
+  <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
+    <a th:if="${i != currentPage}" th:href="@{/places(page=${i}, keyword=${keyword})}" th:text="${i+1}"></a>
+    <span th:if="${i == currentPage}" th:text="${i+1}"></span>
+  </span>
+</div>
+
+</body>
+</html>

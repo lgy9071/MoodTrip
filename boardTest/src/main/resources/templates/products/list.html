@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>제품 목록</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="header">
+    <form class="search-bar" method="get" action="/products">
+        <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어">
+        <button type="submit">검색</button>
+    </form>
+    <form method="post" action="/logout" class="logout"><button type="submit">로그아웃</button></form>
+</div>
+
+<h1>액세서리 & 고양이 용품</h1>
+<a href="/products/new" class="button-link">상품 등록</a>
+<a href="/places" class="button-link">맛집</a>
+<a href="/trips" class="button-link">여행</a>
+
+<div class="card-container">
+    <div class="card" th:each="x : ${page.content}">
+        <img th:if="${x.imageUrl}" th:src="${x.imageUrl}" alt="이미지" class="card-img">
+        <div class="card-body">
+            <h3><a th:href="@{/products/{id}(id=${x.id})}" th:text="${x.name}"></a></h3>
+            <p th:text="${x.category}"></p>
+            <p th:text="${x.price != null ? x.price + '원' : '가격정보 없음'}"></p>
+        </div>
+    </div>
+</div>
+
+<div class="pagination">
+  <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
+    <a th:if="${i != currentPage}" th:href="@{/products(page=${i}, keyword=${keyword})}" th:text="${i+1}"></a>
+    <span th:if="${i == currentPage}" th:text="${i+1}"></span>
+  </span>
+</div>
+
+</body>
+</html>
