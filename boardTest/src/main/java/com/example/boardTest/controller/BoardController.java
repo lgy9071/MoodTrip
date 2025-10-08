@@ -19,7 +19,7 @@ public class BoardController {
 
     private final PostService postService;
 
-    @GetMapping({"/", "/board"})
+    @GetMapping("/board")
     public String list(@RequestParam(defaultValue = "0") int page, Model model) {
         page = Math.max(0, page);
 
@@ -76,7 +76,7 @@ public class BoardController {
                          HttpSession session) {
         User user = requireLogin(session);
         Post post = postService.create(title, content, user);
-        return "redirect:/board/" + post.getId();
+        return "board/" + post.getId();
     }
 
     @GetMapping("/board/{id}/edit")

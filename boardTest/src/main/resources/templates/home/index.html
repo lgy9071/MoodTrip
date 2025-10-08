@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>메인 화면</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+         font-family: 'Noto Sans KR', sans-serif;
+         margin:0;
+         padding:24px;
+         color:#222;
+         }
+        .topbar {
+         display:flex;
+         justify-content:space-between;
+         align-items:center;
+         margin-bottom:16px;
+        }
+        .buttons a, .buttons form button {
+         display:inline-block;
+          margin-right:8px;
+          padding:8px 14px;
+          text-decoration:none;
+          border:1px solid #ddd;
+          background:#1976d2;
+          color:#fff;
+          border-radius:6px;
+        }
+        .grid {
+         display:grid;
+         grid-template-columns: repeat(
+         auto-fill,minmax(240px,1fr));
+         gap:16px;
+        }
+        .card {
+         border:1px solid #eaeaea;
+         border-radius:10px;
+         padding:16px;
+         background:#fff;
+        }
+        .card h3 {
+         margin:0 0 8px;
+         color:#1976d2;
+        }
+        .muted {
+         color:#666;
+         font-size:14px;
+        }
+        .logout {
+         margin-left:8px;
+          display:inline-block;
+        }
+        .logout button {
+         border:1px solid #ddd;
+         background:#fff;
+         color:#333;
+         padding:6px 12px;
+         border-radius:6px;
+         cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div>
+        <h1 style="margin:0;">메인</h1>
+        <div class="muted" th:if="${user != null}" th:text="|환영해요, ${user.name}님|"></div>
+    </div>
+
+    <div class="buttons" th:if="${user == null}">
+        <a href="/login">로그인</a>
+        <a href="/signup" style="background:#2e7d32;">회원가입</a>
+    </div>
+
+    <div th:if="${user != null}">
+        <form class="logout" method="post" action="/logout">
+            <button type="submit">로그아웃</button>
+        </form>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3><a href="/board">영화 목록</a></h3>
+        <p class="muted">포스터/영화 카드 + 검색 + 페이지네이션</p>
+    </div>
+    <div class="card">
+        <h3><a href="/reviews">영화 리뷰</a></h3>
+        <p class="muted">영화 선택 후 별점/후기 작성</p>
+    </div>
+    <div class="card">
+        <h3><a href="/products">액세서리 · 고양이 용품</a></h3>
+        <p class="muted">이미지, 가격, 구매링크 카드형</p>
+    </div>
+    <div class="card">
+        <h3><a href="/places">맛집 리스트</a></h3>
+        <p class="muted">카테고리/주소/평점과 메모</p>
+    </div>
+    <div class="card">
+        <h3><a href="/trips">여행 일정</a></h3>
+        <p class="muted">여행 계획 만들기 + Day별 일정</p>
+    </div>
+</div>
+
+</body>
+</html>

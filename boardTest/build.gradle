@@ -39,6 +39,9 @@ dependencies {
 
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// 비밀번호 암호화를 위한 BCrypt
+	implementation 'org.springframework.security:spring-security-crypto'
 }
 
 
