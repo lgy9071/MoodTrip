@@ -6,6 +6,8 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+<div th:replace="~{fragments/header :: siteHeader('home')}"></div>
+<main style="padding:16px 0;">
 <div class="header">
   <form class="search-bar" method="get" action="/board/search">
     <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어 입력">
@@ -37,5 +39,7 @@
     <span th:if="${i == currentPage}" th:text="${i+1}"></span>
   </span>
 </div>
+</main>
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
 </body>
 </html>

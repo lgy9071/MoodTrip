@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>header</title>
+</head>
+<body>
+<header th:fragment="siteHeader(active)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;">
+        <a href="/" style="text-decoration:none;color:#222;font-weight:700;font-size:20px;">BoardTest</a>
+        <nav style="display:flex;gap:12px;">
+            <a th:classappend="${active}=='home' ? 'active'" href="/">홈</a>
+            <a th:classappend="${active}=='board' ? 'active'" href="/board">영화</a>
+            <a th:classappend="${active}=='reviews' ? 'active'" href="/reviews">리뷰</a>
+            <a th:classappend="${active}=='products' ? 'active'" href="/products">용품</a>
+            <a th:classappend="${active}=='places' ? 'active'" href="/places">맛집</a>
+            <a th:classappend="${active}=='trips' ? 'active'" href="/trips">여행</a>
+        </nav>
+        <div>
+            <form method="post" action="/logout" style="display:inline;">
+                <button type="submit">로그아웃</button>
+            </form>
+            <a href="/login" style="margin-left:8px;">로그인</a>
+            <a href="/signup" style="margin-left:8px;">회원가입</a>
+        </div>
+    </div>
+    <style>
+        header a{color:#333;text-decoration:none;padding:6px 8px;border-radius:6px}
+        header a.active{background:#1976d2;color:#fff}
+        header button{background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer}
+    </style>
+</header>
+</body>
+</html>

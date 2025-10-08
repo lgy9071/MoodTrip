@@ -62,7 +62,8 @@
     </style>
 </head>
 <body>
-
+<div th:replace="~{fragments/header :: siteHeader('home')}"></div>
+<main style="padding:16px 0;">
 <div class="topbar">
     <div>
         <h1 style="margin:0;">메인</h1>
@@ -103,6 +104,7 @@
         <p class="muted">여행 계획 만들기 + Day별 일정</p>
     </div>
 </div>
-
+</main>
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
 </body>
 </html>
