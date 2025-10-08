@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Table(name = "products")
-public class Product {
+public class Product extends Base{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,17 +37,4 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="author_id")
     private User author;
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    public void onCreate(){
-        createdAt = updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void onUpdate(){
-        updatedAt = LocalDateTime.now();
-    }
 }
