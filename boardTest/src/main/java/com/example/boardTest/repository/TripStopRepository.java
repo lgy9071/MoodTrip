@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface TripStopRepository extends JpaRepository<TripStop, Long> {
     List<TripStop> findByTripIdOrderByDayOrderAsc(Long tripId);
+    void deleteByTripId(Long tripId);
 }

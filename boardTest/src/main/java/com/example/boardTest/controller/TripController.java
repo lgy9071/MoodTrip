@@ -1,0 +1,136 @@
+package com.example.boardTest.controller;
+
+import com.example.boardTest.dto.TripPlanCreateDTO;
+import com.example.boardTest.dto.TripStopCreateDTO;
+import com.example.boardTest.entity.TripPlan;
+import com.example.boardTest.entity.TripStop;
+import com.example.boardTest.entity.User;
+import com.example.boardTest.service.TripService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Controller
+@RequestMapping("/trips")
+@RequiredArgsConstructor
+public class TripController {
+
+    private final TripService tripService;
+
+    // 세션 키 이름(프로젝트에서 사용하는 키로 바꾸기)
+    public static final String LOGIN_USER_ATTR = "LOGIN_USER";
+
+    @GetMapping
+    public String list(@RequestParam(defaultValue = "0") int page,
+                       @RequestParam(defaultValue = "10") int size,
+                       Model model) {
+        Page<TripPlan> plans = tripService.listPlans(page, size);
+        model.addAttribute("plans", plans);
+        return "trip/list";
+    }
+
+    @GetMapping("/new")
+    public String newForm(Model model) {
+        model.addAttribute("form",
+                new TripPlanCreateDTO("", LocalDate.now(), LocalDate.now().plusDays(2)));
+        return "trip/new";
+    }
+
+    @PostMapping
+    public String create(@Valid @ModelAttribute("form") TripPlanCreateDTO form,
+                         BindingResult br,
+                         RedirectAttributes ra,
+                         @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
+
+        if (loginUser == null) {
+            // 로그인 필요 처리: 로그인 페이지로 리다이렉트하거나 401 처리
+            ra.addFlashAttribute("msg", "로그인이 필요합니다.");
+            return "redirect:/login";
+        }
+
+        if (!form.isDateRangeValid()) {
+            br.rejectValue("endDate", "dateRange", "종료일은 시작일 이후여야 합니다.");
+        }
+        if (br.hasErrors()) {
+            return "trip/new";
+        }
+
+        tripService.createPlan(form.getTitle(), form.getStartDate(), form.getEndDate(), loginUser);
+        ra.addFlashAttribute("msg", "여행 계획을 등록했습니다.");
+        return "redirect:/trips";
+    }
+
+    @GetMapping("/{id}")
+    public String detail(@PathVariable("id") Long id, Model model) {
+        TripPlan plan = tripService.findPlan(id);
+        List<TripStop> stops = tripService.getStops(id);
+        model.addAttribute("plan", plan);
+        model.addAttribute("stops", stops);
+        model.addAttribute("stopForm", new TripStopCreateDTO(1, "", "", ""));
+        return "trip/detail";
+    }
+
+    @PostMapping("/{id}/stops")
+    public String addStop(@PathVariable("id") Long id,
+                          @Valid @ModelAttribute("stopForm") TripStopCreateDTO dto,
+                          BindingResult br,
+                          RedirectAttributes ra,
+                          Model model,
+                          @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
+
+        if (loginUser == null) {
+            ra.addFlashAttribute("msg", "로그인이 필요합니다.");
+            return "redirect:/login";
+        }
+
+        if (br.hasErrors()) {
+            TripPlan plan = tripService.findPlan(id);
+            model.addAttribute("plan", plan);
+            model.addAttribute("stops", tripService.getStops(id));
+            return "trip/detail";
+        }
+
+        tripService.addStop(id, dto, loginUser);
+        ra.addFlashAttribute("msg", "경유지를 추가했습니다.");
+        return "redirect:/trips/{id}";
+    }
+
+    @PostMapping("/{id}/delete")
+    public String deletePlan(@PathVariable("id") Long id,
+                             RedirectAttributes ra,
+                             @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
+
+        if (loginUser == null) {
+            ra.addFlashAttribute("msg", "로그인이 필요합니다.");
+            return "redirect:/login";
+        }
+
+        tripService.deletePlan(id, loginUser);
+        ra.addFlashAttribute("msg", "여행 계획을 삭제했습니다.");
+        return "redirect:/trips";
+    }
+
+    @DeleteMapping("/stops/{stopId}")
+    @ResponseBody
+    public void deleteStop(@PathVariable("stopId") Long stopId,
+                           @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
+        // 필요 시 소유자 검증을 서비스로 위임(현재 removeStop은 권한검사 없이 삭제)
+        tripService.removeStop(stopId);
+    }
+
+    @PatchMapping("/stops/{stopId}/day")
+    @ResponseBody
+    public void moveDay(@PathVariable("stopId") Long stopId,
+                        @RequestParam("newDay") int newDay,
+                        @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
+        tripService.moveDay(stopId, newDay);
+    }
+}
