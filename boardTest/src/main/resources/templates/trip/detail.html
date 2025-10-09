@@ -30,10 +30,13 @@
   </div>
   <div style="display:flex; gap:8px;">
     <a class="btn" th:href="@{/trips}">목록</a>
+    <div th:if="${session.LOGIN_USER != null
+             and #ids.eq(session.LOGIN_USER.id, place.author?.id)}">
     <form th:action="@{|/trips/${plan.id}/delete|}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
       <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
       <button type="submit" class="btn btn-danger">계획 삭제</button>
     </form>
+    </div>
   </div>
 </div>
 
@@ -62,7 +65,10 @@
         <td class="row-actions">
           <button class="btn" th:attr="data-id=${s.id}" onclick="moveDay(this, -1)">-1일</button>
           <button class="btn" th:attr="data-id=${s.id}" onclick="moveDay(this, 1)">+1일</button>
+          <div th:if="${session.LOGIN_USER != null
+             and #ids.eq(session.LOGIN_USER.id, place.author?.id)}">
           <button class="btn btn-danger" th:attr="data-id=${s.id}" onclick="removeStop(this)">삭제</button>
+          </div>
         </td>
       </tr>
       <tr th:if="${#lists.isEmpty(stops)}">

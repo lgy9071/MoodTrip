@@ -13,9 +13,12 @@
 <hr>
 <p th:text="${review.content}"></p>
 
+<div th:if="${session.LOGIN_USER != null
+             and #ids.eq(session.LOGIN_USER.id, place.author?.id)}">
 <form method="post" th:action="@{/reviews/{id}/delete(id=${review.id})}">
   <button type="submit">삭제</button>
 </form>
+</div>
 <a href="/reviews">목록으로</a>
 </body>
 </html>

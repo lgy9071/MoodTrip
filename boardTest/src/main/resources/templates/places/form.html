@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>맛집 등록</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .form-wrap{max-width:720px;margin:24px auto;padding:16px}
+    .form-row{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center;margin-bottom:12px}
+    .actions{display:flex;gap:8px;margin-top:16px}
+    input,select,textarea{padding:8px;border:1px solid #ddd;border-radius:6px}
+    textarea{min-height:120px}
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: siteHeader('places')}"></div>
+
+<main class="form-wrap">
+  <h1>맛집 등록</h1>
+
+  <form method="post" action="/places">
+    <!-- 시큐리티 미사용이면 CSRF hidden 불필요 -->
+
+    <div class="form-row">
+      <label for="name">이름 *</label>
+      <input id="name" name="name" type="text" required placeholder="예) 부산 밀면집">
+    </div>
+
+    <div class="form-row">
+      <label for="address">주소</label>
+      <input id="address" name="address" type="text" placeholder="예) 부산 남구 …">
+    </div>
+
+    <div class="form-row">
+      <label for="category">카테고리</label>
+      <input id="category" name="category" type="text" placeholder="예) 한식, 카페, 일식">
+    </div>
+
+    <div class="form-row">
+      <label for="rating">평점(0~5)</label>
+      <select id="rating" name="rating">
+        <option th:each="i : ${#numbers.sequence(0,5)}" th:value="${i}" th:text="${i}"></option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label for="imageUrl">이미지 URL</label>
+      <input id="imageUrl" name="imageUrl" type="url" placeholder="https://…">
+    </div>
+
+    <div class="form-row">
+      <label for="memo">메모</label>
+      <textarea id="memo" name="memo" placeholder="대표 메뉴, 가격, 영업시간 등"></textarea>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="button-link">등록</button>
+      <a href="/places" class="button-link" style="background:#eee;color:#333;">목록</a>
+    </div>
+  </form>
+</main>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
+</body>
+</html>

@@ -19,7 +19,7 @@ public class PlaceService {
         page = Math.max(0, page);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         if (keyword == null || keyword.isBlank()) return repo.findAll(pageable);
-        return repo.findByCategoryOrName(keyword, keyword, pageable);
+        return repo.findByCategoryContainingIgnoreCaseOrNameContainingIgnoreCase(keyword, keyword, pageable);
     }
 
     public Place find(Long id) {

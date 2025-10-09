@@ -28,7 +28,9 @@
             <h3><a th:href="@{/places/{id}(id=${p.id})}" th:text="${p.name}"></a></h3>
             <p th:text="${p.category}"></p>
             <p th:text="${p.address}"></p>
-            <p th:text="${p.rating != null ? ('⭐'.repeat(p.rating)) : ''}"></p>
+            <p th:if="${p.rating != null}">
+                <span th:each="i : ${#numbers.sequence(1, p.rating)}">⭐</span>
+            </p>
         </div>
     </div>
 </div>

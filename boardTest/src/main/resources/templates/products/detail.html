@@ -13,9 +13,12 @@
 <p><b>가격:</b> <span th:text="${product.price != null ? product.price + '원' : '정보 없음'}"></span></p>
 <p><a th:if="${product.buyLink}" th:href="${product.buyLink}" class="button-link" target="_blank">구매하러 가기</a></p>
 
+<div th:if="${session.LOGIN_USER != null
+             and #ids.eq(session.LOGIN_USER.id, place.author?.id)}">
 <form method="post" th:action="@{/products/{id}/delete(id=${product.id})}" style="display:inline">
     <button type="submit">삭제</button>
 </form>
+</div>
 <a href="/products" class="button-link">목록</a>
 
 </body>

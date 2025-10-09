@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${place.name} + ' - 상세'">맛집 상세</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .wrap{max-width:980px;margin:24px auto;padding:16px;display:grid;grid-template-columns:1fr 420px;gap:24px}
+        .place-card img{max-width:100%;height:auto;border-radius:8px}
+        .meta p{margin:.25rem 0;color:#555}
+        .form-row{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;margin-bottom:10px}
+        input,select,textarea{padding:8px;border:1px solid #ddd;border-radius:6px}
+        textarea{min-height:100px}
+        .actions{display:flex;gap:8px;margin-top:12px}
+        .danger{background:#e74c3c;color:#fff}
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: siteHeader('places')}"></div>
+
+<main class="wrap">
+    <!-- 왼쪽: 정보 보기 -->
+    <section class="place-card">
+        <h1 th:text="${place.name}">가게명</h1>
+        <div th:if="${place.imageUrl}">
+            <img th:src="${place.imageUrl}" alt="">
+        </div>
+        <div class="meta">
+            <p><strong>카테고리:</strong> <span th:text="${place.category} ?: '-'"></span></p>
+            <p><strong>주소:</strong> <span th:text="${place.address} ?: '-'"></span></p>
+            <p>
+                <strong>평점:</strong>
+                <span th:if="${place.rating != null}">
+          <span th:each="i : ${#numbers.sequence(1, place.rating)}">⭐</span>
+          <span th:text="' (' + ${place.rating} + '/5)'"></span>
+        </span>
+                <span th:if="${place.rating == null}">-</span>
+            </p>
+            <p><strong>등록일:</strong>
+                <span th:text="${#temporals.format(place.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+            </p>
+            <p><strong>메모:</strong></p>
+            <pre th:text="${place.memo} ?: '-'" style="white-space:pre-wrap"></pre>
+
+            <div class="actions" style="margin-top:16px">
+                <a href="/places" class="button-link">목록</a>
+
+                <!-- 삭제 -->
+                <div th:if="${session.LOGIN_USER != null
+             and #ids.eq(session.LOGIN_USER.id, place.author?.id)}">
+                <form th:action="@{|/places/${place.id}/delete|}" method="post"
+                      onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                    <button type="submit" class="button-link danger">삭제</button>
+                </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div th:if="${session.LOGIN_USER != null
+             and #ids.eq(session.LOGIN_USER.id, place.author?.id)}">
+    <!-- 오른쪽: 수정 폼 -->
+    <section>
+        <h2>정보 수정</h2>
+        <form th:action="@{|/places/${place.id}/edit|}" method="post">
+            <div class="form-row">
+                <label for="name">이름 *</label>
+                <input id="name" name="name" type="text" required th:value="${place.name}">
+            </div>
+
+            <div class="form-row">
+                <label for="address">주소</label>
+                <input id="address" name="address" type="text" th:value="${place.address}">
+            </div>
+
+            <div class="form-row">
+                <label for="category">카테고리</label>
+                <input id="category" name="category" type="text" th:value="${place.category}">
+            </div>
+
+            <div class="form-row">
+                <label for="rating">평점(0~5)</label>
+                <select id="rating" name="rating">
+                    <option th:each="i : ${#numbers.sequence(0,5)}"
+                            th:value="${i}"
+                            th:selected="${place.rating != null and place.rating == i}"
+                            th:text="${i}"></option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label for="imageUrl">이미지 URL</label>
+                <input id="imageUrl" name="imageUrl" type="url" th:value="${place.imageUrl}">
+            </div>
+
+            <div class="form-row">
+                <label for="memo">메모</label>
+                <textarea id="memo" name="memo" th:text="${place.memo}"></textarea>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="button-link">수정 저장</button>
+                <a th:href="@{/places}" class="button-link" style="background:#eee;color:#333;">취소</a>
+            </div>
+        </form>
+    </section>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
+</body>
+</html>
