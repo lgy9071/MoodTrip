@@ -9,13 +9,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
 public class AuthController {
 
     private final UserService userService;
-    public static String LOGIN_USER = "LOGIN_USER";
+    public static final String LOGIN_USER = "LOGIN_USER";
 
     @GetMapping("/signup")
     public String signupForm() {
@@ -33,8 +34,13 @@ public class AuthController {
             return "redirect:/login";
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
-            return "auth/signup";
+            return "signup"; // 경로 통일
         }
+    }
+
+    @GetMapping("/login")
+    public String loginForm() {
+        return "login";
     }
 
     @PostMapping("/login")
@@ -52,15 +58,11 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/login")
-    public String loginForm() {
-        return "login";
-    }
-
     @PostMapping("/logout")
-    public String logout(HttpSession session) {
+    public String logout(HttpSession session, RedirectAttributes ra) {
         session.invalidate();
-        return "redirect:/login";
+        ra.addAttribute("loggedOut", "true");   // 메인에서 안내 띄우기 위함
+        return "redirect:/";
     }
 
     public static User currentUser(HttpSession session) {

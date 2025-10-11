@@ -6,25 +6,44 @@
 </head>
 <body>
 <header th:fragment="siteHeader(active)">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;">
-        <a href="/" style="text-decoration:none;color:#222;font-weight:700;font-size:20px;">BoardTest</a>
-        <nav style="display:flex;gap:12px;">
-            <a th:classappend="${active}=='home' ? 'active'" href="/">홈</a>
-            <!-- /board → /posts, 활성화 키 'board' → 'posts' -->
-            <a th:classappend="${active}=='posts' ? 'active'" href="/posts">콘텐츠</a>
-            <a th:classappend="${active}=='reviews' ? 'active'" href="/reviews">리뷰</a>
-            <a th:classappend="${active}=='products' ? 'active'" href="/products">용품</a>
-            <a th:classappend="${active}=='places' ? 'active'" href="/places">맛집</a>
-            <a th:classappend="${active}=='trips' ? 'active'" href="/trips">여행</a>
-        </nav>
-        <div>
-            <form method="post" action="/logout" style="display:inline;">
-                <button type="submit">로그아웃</button>
-            </form>
-            <a href="/login" style="margin-left:8px;">로그인</a>
-            <a href="/signup" style="margin-left:8px;">회원가입</a>
+    <div style="display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:1px solid #eee;">
+
+        <!-- 상단 바 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+            <a href="/" style="text-decoration:none;color:#222;font-weight:700;font-size:20px;">BoardTest</a>
+
+            <nav style="display:flex;gap:12px;">
+                <a th:classappend="${active}=='home' ? 'active'" href="/">홈</a>
+                <a th:classappend="${active}=='posts' ? 'active'" href="/posts">콘텐츠</a>
+                <a th:classappend="${active}=='reviews' ? 'active'" href="/reviews">리뷰</a>
+                <a th:classappend="${active}=='products' ? 'active'" href="/products">용품</a>
+                <a th:classappend="${active}=='places' ? 'active'" href="/places">맛집</a>
+                <a th:classappend="${active}=='trips' ? 'active'" href="/trips">여행</a>
+            </nav>
+
+            <!-- 우측 인증 영역: (비로그인) 로그인/회원가입, (로그인) 로그아웃 -->
+            <div>
+                <!-- 비로그인 -->
+                <span th:if="${session.LOGIN_USER == null}">
+          <a href="/login" style="margin-right:8px;">로그인</a>
+          <a href="/signup">회원가입</a>
+        </span>
+
+                <!-- 로그인 -->
+                <span th:if="${session.LOGIN_USER != null}">
+          <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit">로그아웃</button>
+          </form>
+        </span>
+            </div>
+        </div>
+
+        <!-- 로그아웃 후 안내 배너 -->
+        <div th:if="${param.loggedOut}" style="background:#f5faff;border:1px solid #d6e9ff;color:#184a8b;padding:10px 12px;border-radius:8px;">
+            정상적으로 로그아웃되었습니다.
         </div>
     </div>
+
     <style>
         header a{color:#333;text-decoration:none;padding:6px 8px;border-radius:6px}
         header a.active{background:#1976d2;color:#fff}
