@@ -6,14 +6,13 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<div th:replace="~{fragments/header :: siteHeader('home')}"></div>
+<div th:replace="~{fragments/header :: siteHeader('places')}"></div>
 <main style="padding:16px 0;">
 <div class="header">
     <form class="search-bar" method="get" action="/places">
         <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어(카테고리/이름)">
         <button type="submit">검색</button>
     </form>
-    <form method="post" action="/logout" class="logout"><button type="submit">로그아웃</button></form>
 </div>
 
 <h1>맛집</h1>

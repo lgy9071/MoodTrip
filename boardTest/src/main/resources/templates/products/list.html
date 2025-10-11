@@ -6,14 +6,13 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<div th:replace="~{fragments/header :: siteHeader('home')}"></div>
+<div th:replace="~{fragments/header :: siteHeader('products')}"></div>
 <main style="padding:16px 0;">
 <div class="header">
     <form class="search-bar" method="get" action="/products">
         <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어">
         <button type="submit">검색</button>
     </form>
-    <form method="post" action="/logout" class="logout"><button type="submit">로그아웃</button></form>
 </div>
 
 <h1>액세서리 & 고양이 용품</h1>

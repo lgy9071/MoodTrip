@@ -34,14 +34,14 @@ public class TripController {
                        Model model) {
         Page<TripPlan> plans = tripService.listPlans(page, size);
         model.addAttribute("plans", plans);
-        return "trip/list";
+        return "trips/list";
     }
 
     @GetMapping("/new")
     public String newForm(Model model) {
         model.addAttribute("form",
                 new TripPlanCreateDTO("", LocalDate.now(), LocalDate.now().plusDays(2)));
-        return "trip/new";
+        return "trips/new";
     }
 
     @PostMapping
@@ -60,7 +60,7 @@ public class TripController {
             br.rejectValue("endDate", "dateRange", "종료일은 시작일 이후여야 합니다.");
         }
         if (br.hasErrors()) {
-            return "trip/new";
+            return "trips/new";
         }
 
         tripService.createPlan(form.getTitle(), form.getStartDate(), form.getEndDate(), loginUser);
@@ -75,7 +75,7 @@ public class TripController {
         model.addAttribute("plan", plan);
         model.addAttribute("stops", stops);
         model.addAttribute("stopForm", new TripStopCreateDTO(1, "", "", ""));
-        return "trip/detail";
+        return "trips/detail";
     }
 
     @PostMapping("/{id}/stops")
@@ -95,7 +95,7 @@ public class TripController {
             TripPlan plan = tripService.findPlan(id);
             model.addAttribute("plan", plan);
             model.addAttribute("stops", tripService.getStops(id));
-            return "trip/detail";
+            return "trips/detail";
         }
 
         tripService.addStop(id, dto, loginUser);

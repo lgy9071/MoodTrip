@@ -15,32 +15,122 @@
 <body>
 <div th:replace="~{fragments/header :: siteHeader('home')}"></div>
 
-<main style="padding:16px 0;">
-    <h1 style="margin:0 0 12px;">메인</h1>
-    <div class="muted" th:if="${user != null}" th:text="|환영해요, ${user.name}님|"></div>
+<main id="home" class="home-main">
 
-    <div class="grid">
-        <div class="card">
-            <h3><a href="/posts">영화 목록</a></h3>
-            <p class="muted">포스터/영화 카드 + 검색 + 페이지네이션</p>
+    <!-- Hero: 사이트 첫인상 / 여자친구를 위한 문구 -->
+    <section class="hero">
+        <div class="hero__inner">
+            <h1 class="hero__title">MoodTrip</h1>
+            <p class="hero__subtitle">
+                오늘의 우리 무드에 맞춰, 영화·맛집·여행·취향을 담아보는 작은 기록
+            </p>
+            <div class="hero__actions">
+                <a href="/trips" class="btn btn--primary">여행 시작하기</a>
+                <a href="/posts" class="btn btn--ghost">영화 보러가기</a>
+            </div>
+            <!-- 향후 배경: 살짝 흐린 데이트 사진/여행 전경 or 파스텔 그래디언트 -->
         </div>
-        <div class="card">
-            <h3><a href="/reviews">영화 리뷰</a></h3>
-            <p class="muted">영화 선택 후 별점/후기 작성</p>
+    </section>
+
+    <!-- Category Intro: 각 섹션 소개 (헤더에 링크가 있어도, 메인에선 '감성 소개' 중심) -->
+    <section class="categories">
+        <header class="section-head">
+            <h2 class="section-title">무드별 카테고리</h2>
+            <p class="section-sub">가볍게 둘러보고 싶은 주제를 고르세요</p>
+        </header>
+
+        <div class="category-grid">
+            <!-- 영화 -->
+            <article class="cat-card cat-card--movie">
+                <figure class="cat-card__media">
+                    <!-- * 임시 이미지 경로. 나중에 교체 -->
+                    <img src="/images/placeholder/movie.jpg" alt="영화">
+                </figure>
+                <div class="cat-card__body">
+                    <h3 class="cat-card__title">영화</h3>
+                    <p class="cat-card__desc">
+                        비 오는 날엔 잔잔하게, 설레는 주말엔 로맨틱하게.
+                    </p>
+                    <a href="/posts" class="cat-card__link">둘러보기</a>
+                </div>
+            </article>
+
+            <!-- 맛집 -->
+            <article class="cat-card cat-card--food">
+                <figure class="cat-card__media">
+                    <img src="/images/placeholder/food.jpg" alt="맛집">
+                </figure>
+                <div class="cat-card__body">
+                    <h3 class="cat-card__title">맛집</h3>
+                    <p class="cat-card__desc">
+                        우리만의 단골을 찾아서—작고 확실한 행복.
+                    </p>
+                    <a href="/places" class="cat-card__link">둘러보기</a>
+                </div>
+            </article>
+
+            <!-- 여행 -->
+            <article class="cat-card cat-card--travel">
+                <figure class="cat-card__media">
+                    <img src="/images/placeholder/travel.jpg" alt="여행">
+                </figure>
+                <div class="cat-card__body">
+                    <h3 class="cat-card__title">여행</h3>
+                    <p class="cat-card__desc">
+                        계획부터 추억까지, 우리의 루트로 채워요.
+                    </p>
+                    <a href="/trips" class="cat-card__link">둘러보기</a>
+                </div>
+            </article>
+
+            <!-- 악세사리 -->
+            <article class="cat-card cat-card--shop">
+                <figure class="cat-card__media">
+                    <img src="/images/placeholder/accessory.jpg" alt="악세사리">
+                </figure>
+                <div class="cat-card__body">
+                    <h3 class="cat-card__title">악세사리</h3>
+                    <p class="cat-card__desc">
+                        귀여움 한 스푼—하루의 포인트를 더해요.
+                    </p>
+                    <a href="/products" class="cat-card__link">둘러보기</a>
+                </div>
+            </article>
         </div>
-        <div class="card">
-            <h3><a href="/products">액세서리 · 고양이 용품</a></h3>
-            <p class="muted">이미지, 가격, 구매링크 카드형</p>
-        </div>
-        <div class="card">
-            <h3><a href="/places">맛집 리스트</a></h3>
-            <p class="muted">카테고리/주소/평점과 메모</p>
-        </div>
-        <div class="card">
-            <h3><a href="/trips">여행 일정</a></h3>
-            <p class="muted">여행 계획 만들기 + Day별 일정</p>
-        </div>
-    </div>
+    </section>
+
+    <!-- Today Pick: 오늘의 추천 한 장면 (나중에 랜덤/룰 기반으로 바꿔도 됨) -->
+    <section class="today-pick">
+        <header class="section-head">
+            <h2 class="section-title">오늘의 무드 Pick</h2>
+            <p class="section-sub">기분 따라 고르는 작은 추천</p>
+        </header>
+
+        <article class="pick-card">
+            <figure class="pick-card__media">
+                <img src="/images/placeholder/today.jpg" alt="오늘의 추천">
+            </figure>
+            <div class="pick-card__body">
+                <h3 class="pick-card__title">“비 오는 날엔 이런 영화 어때?”</h3>
+                <p class="pick-card__desc">
+                    따뜻한 감성, 천천히 오는 위로. 리뷰 평점이 높은 작품들만 모았어요.
+                </p>
+                <a href="/reviews" class="btn btn--link">리뷰 보러가기 →</a>
+            </div>
+        </article>
+    </section>
+
+    <!-- Small Notes: 우리만의 메모 (나중에 로그인시 개인화 문구 출력) -->
+    <section class="notes">
+        <header class="section-head">
+            <h2 class="section-title">오늘의 한 줄</h2>
+        </header>
+        <blockquote class="note">
+            <p>“데이트는 거창하지 않아도, 우리 취향으로 충분해.”</p>
+            <cite>— MoodTrip</cite>
+        </blockquote>
+    </section>
+
 </main>
 
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
