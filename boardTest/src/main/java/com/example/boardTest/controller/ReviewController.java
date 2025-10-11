@@ -1,6 +1,6 @@
 package com.example.boardTest.controller;
 
-import com.example.boardTest.entity.Post;
+import com.example.boardTest.entity.board.Post;
 import com.example.boardTest.entity.Review;
 import com.example.boardTest.entity.User;
 import com.example.boardTest.service.PostService;

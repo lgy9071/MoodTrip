@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>콘텐츠 목록</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/header :: siteHeader('posts')}"></div>
+<main style="padding:16px 0;">
+    <div class="header">
+        <form class="search-bar" method="get" action="/posts/search">
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어 입력">
+            <button type="submit">검색</button>
+        </form>
+        <form method="get" action="/posts">
+            <select name="type">
+                <option value="">전체</option>
+                <!-- ${types} 사용 -->
+                <option th:each="t : ${types}"
+                        th:value="${t}" th:text="${t}"
+                        th:selected="${selectedType == t}"></option>
+            </select>
+            <input type="text" name="platform" th:value="${selectedPlatform}" placeholder="플랫폼">
+            <button type="submit">필터</button>
+        </form>
+        <form method="post" th:action="@{/logout}" class="logout">
+            <button type="submit">로그아웃</button>
+        </form>
+    </div>
+
+    <h1>콘텐츠 목록</h1>
+    <a href="/posts/new" class="button-link">작성</a>
+    <a href="/reviews" class="button-link">리뷰 목록</a>
+
+    <div class="card-container">
+        <div class="card" th:each="p : ${postPage.content}">
+            <img th:if="${p.imageUrl}" th:src="${p.imageUrl}" alt="표지" class="card-img">
+            <div class="card-body">
+                <h3><a th:href="@{/posts/{id}(id=${p.id})}" th:text="${p.title}"></a></h3>
+                <p>
+                    <span th:text="${p.type}"></span>
+                    <span th:if="${p.platform}"> · <span th:text="${p.platform}"></span></span>
+                </p>
+                <p th:text="${p.author != null ? p.author.username : '알 수 없음'}"></p>
+                <p th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd')}"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="pagination">
+        <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
+          <a th:if="${i != currentPage}" th:href="@{/posts(page=${i})}" th:text="${i+1}"></a>
+          <span th:if="${i == currentPage}" th:text="${i+1}"></span>
+        </span>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
+</body>
+</html>

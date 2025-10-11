@@ -10,7 +10,8 @@
         <a href="/" style="text-decoration:none;color:#222;font-weight:700;font-size:20px;">BoardTest</a>
         <nav style="display:flex;gap:12px;">
             <a th:classappend="${active}=='home' ? 'active'" href="/">홈</a>
-            <a th:classappend="${active}=='board' ? 'active'" href="/board">영화</a>
+            <!-- /board → /posts, 활성화 키 'board' → 'posts' -->
+            <a th:classappend="${active}=='posts' ? 'active'" href="/posts">콘텐츠</a>
             <a th:classappend="${active}=='reviews' ? 'active'" href="/reviews">리뷰</a>
             <a th:classappend="${active}=='products' ? 'active'" href="/products">용품</a>
             <a th:classappend="${active}=='places' ? 'active'" href="/places">맛집</a>

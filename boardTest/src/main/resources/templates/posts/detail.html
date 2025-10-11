@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${post.title}">상세</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<h1 th:text="${post.title}">제목</h1>
+<hr>
+
+<img th:if="${post.imageUrl}" th:src="${post.imageUrl}" alt="표지" class="detail-img">
+
+<p>타입: <span th:text="${post.type}"></span></p>
+<p th:if="${post.platform}">플랫폼: <span th:text="${post.platform}"></span></p>
+<p th:if="${post.watchedAt}">감상일: <span th:text="${post.watchedAt}"></span></p>
+<p th:if="${post.tags}">태그: <span th:text="${post.tags}"></span></p>
+
+<p>작성자: <span th:text="${post.author != null ? post.author.username : '알 수 없음'}"></span></p>
+<pre th:text="${post.content}">내용</pre>
+
+<p th:if="${error}" style="color:red" th:text="${error}"></p>
+
+<a th:href="@{/posts}" class="button-link">목록</a>
+
+<div th:if="${session.LOGIN_USER != null
+             and #ids.eq(session.LOGIN_USER.id, post.author?.id)}">
+  <a th:href="@{/posts/{id}/edit(id=${post.id})}" class="button-link">수정</a>
+
+  <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display:inline">
+    <button type="submit">삭제</button>
+  </form>
+</div>
+</body>
+</html>
