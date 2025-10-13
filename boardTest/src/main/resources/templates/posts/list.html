@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>콘텐츠 목록</title>
+    <title>영상 목록</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -26,9 +26,8 @@
         </form>
     </div>
 
-    <h1>콘텐츠 목록</h1>
+    <h1>영상 목록</h1>
     <a href="/posts/new" class="button-link">작성</a>
-    <a href="/reviews" class="button-link">리뷰 목록</a>
 
     <div class="card-container">
         <div class="card" th:each="p : ${postPage.content}">

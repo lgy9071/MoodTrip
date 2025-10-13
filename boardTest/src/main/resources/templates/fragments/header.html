@@ -10,11 +10,11 @@
 
         <!-- 상단 바 -->
         <div style="display:flex;align-items:center;justify-content:space-between;">
-            <a href="/" style="text-decoration:none;color:#222;font-weight:700;font-size:20px;">BoardTest</a>
+            <a href="/" style="text-decoration:none;color:#222;font-weight:700;font-size:20px;">MoodTrip</a>
 
             <nav style="display:flex;gap:12px;">
                 <a th:classappend="${active}=='home' ? 'active'" href="/">홈</a>
-                <a th:classappend="${active}=='posts' ? 'active'" href="/posts">콘텐츠</a>
+                <a th:classappend="${active}=='posts' ? 'active'" href="/posts">영상</a>
                 <a th:classappend="${active}=='reviews' ? 'active'" href="/reviews">리뷰</a>
                 <a th:classappend="${active}=='products' ? 'active'" href="/products">용품</a>
                 <a th:classappend="${active}=='places' ? 'active'" href="/places">맛집</a>
