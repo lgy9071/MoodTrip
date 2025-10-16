@@ -78,7 +78,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model) {
+    public String detail(@PathVariable("id") Long id, Model model) {
         model.addAttribute("post", postService.findById(id));
         return "posts/detail";
     }
@@ -92,9 +92,9 @@ public class PostController {
     }
 
     @PostMapping
-    public String create(@RequestParam String title,
-                         @RequestParam String content,
-                         @RequestParam ContentType type,
+    public String create(@RequestParam("title") String title,
+                         @RequestParam("content") String content,
+                         @RequestParam("type") ContentType type,
                          @RequestParam(required = false) String platform,
                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate watchedAt,
                          @RequestParam(required = false) String tags,
@@ -106,7 +106,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, HttpSession session, Model model) {
+    public String editForm(@PathVariable("id") Long id, HttpSession session, Model model) {
         User user = requireLogin(session);
         Post post = postService.findById(id);
         if (post.getAuthor() == null || !post.getAuthor().getId().equals(user.getId())) {
@@ -120,10 +120,10 @@ public class PostController {
     }
 
     @PostMapping("/{id}/edit")
-    public String update(@PathVariable Long id,
-                         @RequestParam String title,
-                         @RequestParam String content,
-                         @RequestParam ContentType type,
+    public String update(@PathVariable("id") Long id,
+                         @RequestParam("title") String title,
+                         @RequestParam("content") String content,
+                         @RequestParam("type") ContentType type,
                          @RequestParam(required = false) String platform,
                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate watchedAt,
                          @RequestParam(required = false) String tags,
@@ -144,7 +144,7 @@ public class PostController {
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, HttpSession session, Model model) {
+    public String delete(@PathVariable("id") Long id, HttpSession session, Model model) {
         User user = requireLogin(session);
         try {
             postService.delete(id, user);

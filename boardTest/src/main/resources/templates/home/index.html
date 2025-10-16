@@ -5,11 +5,164 @@
     <title>메인 화면</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        body { font-family:'Noto Sans KR',sans-serif; margin:0; padding:24px; color:#222; }
-        .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
-        .card { border:1px solid #eaeaea; border-radius:10px; padding:16px; background:#fff; }
-        .card h3 { margin:0 0 8px; color:#1976d2; }
-        .muted { color:#666; font-size:14px; }
+    /* 전체 레이아웃 */
+    body {
+    font-family: 'Noto Sans KR', sans-serif;
+    margin: 0;
+    color: #222;
+    background-color: #fafafa;
+    }
+
+    /* 메인 영역 여백 */
+    main.home-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+    }
+
+    /* 공통 섹션 헤더 */
+    .section-head {
+    text-align: center;
+    margin-bottom: 32px;
+    }
+    .section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    }
+    .section-sub {
+    font-size: 0.95rem;
+    color: #666;
+    }
+
+    /* Hero */
+    .hero {
+    background: linear-gradient(135deg, #e3f2fd, #fce4ec);
+    border-radius: 16px;
+    padding: 80px 24px;
+    text-align: center;
+    margin-bottom: 60px;
+    }
+    .hero__title {
+    font-size: 48px;
+    margin: 0;
+    font-weight: 800;
+    color: #1976d2;
+    }
+    .hero__subtitle {
+    font-size: 18px;
+    color: #555;
+    margin-top: 8px;
+    }
+
+    /* 카테고리 카드 그리드 */
+    .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    margin-bottom: 60px;
+    }
+    .cat-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .cat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .cat-card__media img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    }
+    .cat-card__body {
+    padding: 16px;
+    }
+    .cat-card__title {
+    font-size: 20px;
+    margin: 0 0 6px;
+    color: #1976d2;
+    }
+    .cat-card__desc {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 10px;
+    }
+    .cat-card__link {
+    display: inline-block;
+    background: #1976d2;
+    color: #fff;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: background 0.2s;
+    }
+    .cat-card__link:hover {
+    background: #1565c0;
+    }
+
+    /* 오늘의 Pick */
+    .today-pick {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 60px;
+    }
+    .pick-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px;
+    }
+    .pick-card__media img {
+    width: 300px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    }
+    .pick-card__body {
+    flex: 1;
+    }
+    .pick-card__title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    }
+    .pick-card__desc {
+    color: #555;
+    margin-bottom: 10px;
+    }
+    .btn--link {
+    color: #1976d2;
+    font-weight: 600;
+    text-decoration: none;
+    }
+    .btn--link:hover {
+    text-decoration: underline;
+    }
+
+    /* 오늘의 한 줄 */
+    .notes {
+    background: #f5f5f5;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    }
+    .note p {
+    font-size: 18px;
+    font-style: italic;
+    color: #444;
+    margin-bottom: 8px;
+    }
+    .note cite {
+    color: #777;
+    font-size: 14px;
+    }
     </style>
 </head>
 <body>
@@ -22,12 +175,8 @@
         <div class="hero__inner">
             <h1 class="hero__title">MoodTrip</h1>
             <p class="hero__subtitle">
-                오늘의 우리 무드에 맞춰, 영화·맛집·여행·취향을 담아보는 작은 기록
+                오늘의 우리 무드에 맞춰, 맛집·여행을 담아보는 작은 기록
             </p>
-            <div class="hero__actions">
-                <a href="/trips" class="btn btn--primary">여행 시작하기</a>
-                <a href="/posts" class="btn btn--ghost">영화 보러가기</a>
-            </div>
             <!-- 향후 배경: 살짝 흐린 데이트 사진/여행 전경 or 파스텔 그래디언트 -->
         </div>
     </section>
@@ -40,18 +189,18 @@
         </header>
 
         <div class="category-grid">
-            <!-- 영화 -->
-            <article class="cat-card cat-card--movie">
+
+            <!-- 여행 -->
+            <article class="cat-card cat-card--travel">
                 <figure class="cat-card__media">
-                    <!-- * 임시 이미지 경로. 나중에 교체 -->
-                    <img src="/images/placeholder/movie.jpg" alt="영화">
+                    <img src="/images/placeholder/travel.jpg" alt="여행">
                 </figure>
                 <div class="cat-card__body">
-                    <h3 class="cat-card__title">영화</h3>
+                    <h3 class="cat-card__title">여행</h3>
                     <p class="cat-card__desc">
-                        비 오는 날엔 잔잔하게, 설레는 주말엔 로맨틱하게.
+                        계획부터 추억까지, 우리의 루트로 채워요.
                     </p>
-                    <a href="/posts" class="cat-card__link">둘러보기</a>
+                    <a href="/trips" class="cat-card__link">둘러보기</a>
                 </div>
             </article>
 
@@ -69,17 +218,18 @@
                 </div>
             </article>
 
-            <!-- 여행 -->
-            <article class="cat-card cat-card--travel">
+            <!-- 영화 -->
+            <article class="cat-card cat-card--movie">
                 <figure class="cat-card__media">
-                    <img src="/images/placeholder/travel.jpg" alt="여행">
+                    <!-- * 임시 이미지 경로. 나중에 교체 -->
+                    <img src="/images/placeholder/movie.jpg" alt="영화">
                 </figure>
                 <div class="cat-card__body">
-                    <h3 class="cat-card__title">여행</h3>
+                    <h3 class="cat-card__title">영화</h3>
                     <p class="cat-card__desc">
-                        계획부터 추억까지, 우리의 루트로 채워요.
+                        비 오는 날엔 잔잔하게, 설레는 주말엔 로맨틱하게.
                     </p>
-                    <a href="/trips" class="cat-card__link">둘러보기</a>
+                    <a href="/coming-soon" class="cat-card__link">둘러보기</a>
                 </div>
             </article>
 
@@ -93,7 +243,7 @@
                     <p class="cat-card__desc">
                         귀여움 한 스푼—하루의 포인트를 더해요.
                     </p>
-                    <a href="/products" class="cat-card__link">둘러보기</a>
+                    <a href="/coming-soon" class="cat-card__link">둘러보기</a>
                 </div>
             </article>
         </div>

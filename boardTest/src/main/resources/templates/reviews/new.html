@@ -12,7 +12,7 @@
 <body>
 <h1>리뷰 작성</h1>
 <form method="post" action="/reviews">
-  <label>영화 선택:</label>
+  <label>리뷰 선택:</label>
   <select name="title" required>
     <option th:each="m : ${movies}" th:value="${m.title}" th:text="${m.title}"></option>
   </select>
