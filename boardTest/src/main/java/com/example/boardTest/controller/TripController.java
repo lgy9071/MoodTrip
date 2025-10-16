@@ -25,7 +25,7 @@ public class TripController {
 
     private final TripService tripService;
 
-    // 세션 키 이름(프로젝트에서 사용하는 키로 바꾸기)
+    // 세션 키 이름(프로젝트에서 사용하는 키)
     public static final String LOGIN_USER_ATTR = "LOGIN_USER";
 
     @GetMapping
