@@ -10,28 +10,33 @@
 
         <!-- 상단 바 -->
         <div style="display:flex;align-items:center;justify-content:space-between;">
-            <a href="/" style="text-decoration:none;color:#222;font-weight:700;font-size:20px;">MoodTrip</a>
+            <a href="/" th:text="#{app.title}">MoodTrip</a>
 
             <nav style="display:flex;gap:12px;">
-                <a th:classappend="${active}=='trips' ? 'active'" href="/trips">여행</a>
-                <a th:classappend="${active}=='places' ? 'active'" href="/places">맛집</a>
-                <a th:classappend="${active}=='reviews' ? 'active'" href="/reviews">리뷰</a>
-                <a th:classappend="${active}=='posts' ? 'active'" href="/coming-soon">영상</a>
-                <a th:classappend="${active}=='products' ? 'active'" href="/coming-soon">용품</a>
+                <a href="/trips"   th:text="#{nav.trips}">여행</a>
+                <a href="/places"  th:text="#{nav.places}">맛집</a>
+                <a href="/reviews" th:text="#{nav.reviews}">리뷰</a>
+                <a href="/coming-soon" th:text="#{nav.videos}">영상</a>
+                <a href="/coming-soon" th:text="#{nav.products}">용품</a>
             </nav>
+
+            <span>|</span>
+            <a th:href="@{?lang=ko}">KO</a>
+            <a th:href="@{?lang=en}">EN</a>
+            <a th:href="@{?lang=uk}">UK</a>
 
             <!-- 우측 인증 영역: (비로그인) 로그인/회원가입, (로그인) 로그아웃 -->
             <div>
                 <!-- 비로그인 -->
                 <span th:if="${session.LOGIN_USER == null}">
-          <a href="/login" style="margin-right:8px;">로그인</a>
-          <a href="/signup">회원가입</a>
+          <a href="/login"  th:text="#{auth.login}">로그인</a>
+            <a href="/signup" th:text="#{auth.signup}">회원가입</a>
         </span>
 
                 <!-- 로그인 -->
                 <span th:if="${session.LOGIN_USER != null}">
           <form th:action="@{/logout}" method="post" style="display:inline;">
-            <button type="submit">로그아웃</button>
+            <button type="submit" th:text="#{auth.logout}">로그아웃</button>
           </form>
         </span>
             </div>
