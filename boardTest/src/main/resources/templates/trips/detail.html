@@ -28,14 +28,16 @@
     <h1 th:text="${plan.title}">여행 제목</h1>
     <div class="muted" th:text="${plan.startDate} + ' ~ ' + ${plan.endDate}"></div>
   </div>
-  <div style="display:flex; gap:8px;">
+  <div style="display:flex; gap:8px; align-items:center;">
     <a class="btn" th:href="@{/trips}">목록</a>
-    <div th:if="${session.LOGIN_USER != null
-             and #ids.eq(session.LOGIN_USER.id, place.author?.id)}">
-    <form th:action="@{|/trips/${plan.id}/delete|}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
-      <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
-      <button type="submit" class="btn btn-danger">계획 삭제</button>
-    </form>
+
+    <!-- 소유자만 삭제 가능 -->
+    <div th:if="${isOwner}">
+      <form th:action="@{|/trips/${plan.id}/delete|}" method="post"
+            onsubmit="return confirm('정말 삭제하시겠습니까?');" style="display:inline;">
+        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+        <button type="submit" class="btn btn-danger">계획 삭제</button>
+      </form>
     </div>
   </div>
 </div>
@@ -46,6 +48,10 @@
   <!-- 좌측: 경유지 목록 -->
   <div>
     <h2>경유지 목록</h2>
+    <div class="muted" style="margin:6px 0 10px">
+      총 비용: <b th:text="${#numbers.formatDecimal(totalCost, 0, 'COMMA', 2, 'POINT')}"></b> 원
+    </div>
+
     <table>
       <thead>
       <tr>
@@ -53,26 +59,35 @@
         <th>장소명</th>
         <th>주소</th>
         <th>메모</th>
+        <th style="width:120px;">비용</th>
         <th style="width:180px;">액션</th>
       </tr>
       </thead>
       <tbody>
       <tr th:each="s : ${stops}">
-        <td th:text="${s.dayOrder}"></td>
+        <td>
+          <div th:text="${s.dayOrder}"></div>
+          <div class="muted" style="font-size:12px"
+               th:if="${dayCost[s.dayOrder]} != null"
+               th:text="'(일차 합계 ' + ${#numbers.formatDecimal(dayCost[s.dayOrder],0,'COMMA',2,'POINT')} + '원)'"></div>
+        </td>
         <td th:text="${s.placeName}"></td>
         <td th:text="${s.address} ?: '-'"></td>
         <td th:text="${s.memo} ?: '-'"></td>
+        <td th:text="${s.cost != null ? #numbers.formatDecimal(s.cost,0,'COMMA',2,'POINT') : '0'}"></td>
         <td class="row-actions">
           <button class="btn" th:attr="data-id=${s.id}" onclick="moveDay(this, -1)">-1일</button>
           <button class="btn" th:attr="data-id=${s.id}" onclick="moveDay(this, 1)">+1일</button>
-          <div th:if="${session.LOGIN_USER != null
-             and #ids.eq(session.LOGIN_USER.id, place.author?.id)}">
-          <button class="btn btn-danger" th:attr="data-id=${s.id}" onclick="removeStop(this)">삭제</button>
+
+          <!-- 소유자만 삭제 버튼 노출 -->
+          <div th:if="${isOwner}">
+            <button class="btn btn-danger" th:attr="data-id=${s.id}" onclick="removeStop(this)">삭제</button>
           </div>
         </td>
       </tr>
+
       <tr th:if="${#lists.isEmpty(stops)}">
-        <td colspan="5" style="text-align:center;color:#888;">경유지가 없습니다.</td>
+        <td colspan="6" style="text-align:center;color:#888;">경유지가 없습니다.</td>
       </tr>
       </tbody>
     </table>
@@ -81,32 +96,44 @@
   <!-- 우측: 경유지 추가 폼 -->
   <div>
     <h2>경유지 추가</h2>
-    <form th:action="@{|/trips/${plan.id}/stops|}" method="post" th:object="${stopForm}">
-      <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
-      <div style="display:grid; gap:12px;">
-        <div>
-          <label>일차</label>
-          <input type="number" min="1" th:field="*{dayOrder}" />
-          <div class="err" th:if="${#fields.hasErrors('dayOrder')}" th:errors="*{dayOrder}"></div>
+
+    <!-- 소유자만 추가 가능 -->
+    <div th:if="${isOwner}">
+      <form th:action="@{|/trips/${plan.id}/stops|}" method="post" th:object="${stopForm}">
+        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+        <div style="display:grid; gap:12px;">
+          <div>
+            <label>일차</label>
+            <input type="number" min="1" th:field="*{dayOrder}" />
+            <div class="err" th:if="${#fields.hasErrors('dayOrder')}" th:errors="*{dayOrder}"></div>
+          </div>
+          <div>
+            <label>장소명</label>
+            <input type="text" th:field="*{placeName}" placeholder="예) 도톤보리"/>
+            <div class="err" th:if="${#fields.hasErrors('placeName')}" th:errors="*{placeName}"></div>
+          </div>
+          <div>
+            <label>주소(선택)</label>
+            <input type="text" th:field="*{address}" placeholder="예) 오사카부 오사카시…"/>
+          </div>
+          <div>
+            <label>메모</label>
+            <textarea th:field="*{memo}" placeholder="추천 메뉴, 입장시간 등"></textarea>
+          </div>
+          <div>
+            <label>비용(원)</label>
+            <input type="number" step="0.01" min="0" th:field="*{cost}" placeholder="예) 12000"/>
+            <div class="err" th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}"></div>
+          </div>
+          <div>
+            <button class="btn btn-primary" type="submit">추가</button>
+          </div>
         </div>
-        <div>
-          <label>장소명</label>
-          <input type="text" th:field="*{placeName}" placeholder="예) 도톤보리"/>
-          <div class="err" th:if="${#fields.hasErrors('placeName')}" th:errors="*{placeName}"></div>
-        </div>
-        <div>
-          <label>주소(선택)</label>
-          <input type="text" th:field="*{address}" placeholder="예) 오사카부 오사카시…"/>
-        </div>
-        <div>
-          <label>메모</label>
-          <textarea th:field="*{memo}" placeholder="추천 메뉴, 입장시간 등"></textarea>
-        </div>
-        <div>
-          <button class="btn btn-primary" type="submit">추가</button>
-        </div>
-      </div>
-    </form>
+      </form>
+    </div>
+
+    <!-- 비소유자 안내 -->
+    <div th:if="${!isOwner}" class="muted">이 계획은 읽기 전용입니다.</div>
   </div>
 </div>
 
@@ -114,7 +141,6 @@
   async function removeStop(btn) {
     const id = btn.getAttribute('data-id');
     if (!confirm('삭제하시겠습니까?')) return;
-    const tokenName = /*[[${_csrf?.parameterName}]]*/ '_csrf';
     const tokenValue = /*[[${_csrf?.token}]]*/ '';
     const res = await fetch(`/trips/stops/${id}`, {
       method: 'DELETE',
@@ -124,11 +150,9 @@
     else alert('삭제 실패');
   }
 
-  async function moveDay(btn, delta) {
+  async function moveDay(btn, delta) { // delta는 현재는 사용 안 함(직접 입력받는 UX)
     const id = btn.getAttribute('data-id');
     const tokenValue = /*[[${_csrf?.token}]]*/ '';
-    // 서버에서 기존 day를 모르니, 간단히 delta만 요청하고 서버는 newDay 파라미터를 요구 -> 현재 화면에서 계산 불가하므로
-    // UX 단순화를 위해 입력창 띄우기:
     const newDay = prompt('변경할 일차를 입력하세요(숫자):');
     if (!newDay) return;
     const params = new URLSearchParams({ newDay });

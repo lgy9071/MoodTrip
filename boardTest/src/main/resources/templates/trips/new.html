@@ -34,7 +34,8 @@
     <label>종료일</label>
     <input type="date" th:field="*{endDate}"/>
     <div class="err" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
-    <div class="err" th:if="${#fields.hasErrors('endDate')==false and #fields.hasGlobalErrors()}">
+    <!-- 글로벌 에러 출력 (날짜 범위 등) -->
+    <div class="err" th:if="${#fields.hasGlobalErrors()}">
       <span th:each="e: ${#fields.globalErrors()}" th:text="${e}"></span>
     </div>
   </div>

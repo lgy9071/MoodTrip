@@ -15,8 +15,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/trips")
@@ -69,12 +71,28 @@ public class TripController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable("id") Long id, Model model) {
+    public String detail(@PathVariable(name = "id") Long id,
+                         Model model,
+                         @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
+
         TripPlan plan = tripService.findPlan(id);
         List<TripStop> stops = tripService.getStops(id);
+
+        BigDecimal totalCost = tripService.totalCost(id);
+        Map<Integer, BigDecimal> dayCost = tripService.dayCostMap(id);
+
+        boolean isOwner = false;
+        if (loginUser != null && plan.getOwner() != null) {
+            isOwner = loginUser.getId().equals(plan.getOwner().getId());
+        }
+
         model.addAttribute("plan", plan);
         model.addAttribute("stops", stops);
-        model.addAttribute("stopForm", new TripStopCreateDTO(1, "", "", ""));
+        model.addAttribute("stopForm", new TripStopCreateDTO(1,"","","", BigDecimal.ZERO));
+        model.addAttribute("totalCost", totalCost);
+        model.addAttribute("dayCost", dayCost);
+        model.addAttribute("isOwner", isOwner);
+
         return "trips/detail";
     }
 

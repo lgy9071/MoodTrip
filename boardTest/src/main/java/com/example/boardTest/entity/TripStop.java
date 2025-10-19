@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -32,4 +34,7 @@ public class TripStop {
 
     @Lob
     private String memo;              // 메모(추천 메뉴, 시간 등)
+
+    @Column(precision = 12, scale = 2) // 9,999,999,999.99까지
+    private BigDecimal cost;           // 해당 경유지 비용(원화 기준 등)
 }

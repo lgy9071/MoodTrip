@@ -14,8 +14,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -71,6 +74,7 @@ public class TripService {
                 .placeName(dto.placeName())
                 .address(dto.address())
                 .memo(dto.memo())
+                .cost(dto.cost())
                 .build();
         return stopRepo.save(stop);
     }
@@ -84,5 +88,21 @@ public class TripService {
                 .orElseThrow(() -> new IllegalArgumentException("일정 항목이 없습니다."));
         stop.setDayOrder(newDay);
         // dirty checking으로 업데이트
+    }
+
+    // 비용/예산 트래커 (경유지별 cost + 일차/전체 합계)
+    public BigDecimal totalCost(Long planId) {
+        return stopRepo.sumCostByTripId(planId);
+    }
+
+    //일차 합계 맵 만들 때 캐스팅(ClassCastException) 가능성
+    public Map<Integer, BigDecimal> dayCostMap(Long planId) {
+        Map<Integer, BigDecimal> map = new LinkedHashMap<>();
+        for (Object[] row : stopRepo.sumCostByDay(planId)) {
+            Number n = (Number) row[0];
+            BigDecimal sum = (row[1] != null) ? (BigDecimal) row[1] : BigDecimal.ZERO;
+            map.put(n.intValue(), sum);
+        }
+        return map;
     }
 }

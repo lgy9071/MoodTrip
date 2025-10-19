@@ -1,7 +1,11 @@
 package com.example.boardTest.dto;
 
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+
+import java.math.BigDecimal;
 
 // record를 계속 쓰고 싶다면 아래처럼 패키지/임포트만 정리해서 그대로 사용
 public record TripStopCreateDTO(
@@ -12,5 +16,8 @@ public record TripStopCreateDTO(
         @NotBlank(message = "장소명을 입력하세요.")
         String placeName,
         String address,
-        String memo
+        String memo,
+        @PositiveOrZero(message="비용은 0 이상")
+        @Digits(integer=10, fraction=2)
+        BigDecimal cost
 ) {}
