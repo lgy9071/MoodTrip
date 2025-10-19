@@ -2,9 +2,12 @@ package com.example.boardTest.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Data
 public class TripPlanCreateDTO {
 
     @NotBlank(message = "제목을 입력하세요.")
@@ -15,6 +18,13 @@ public class TripPlanCreateDTO {
 
     @NotNull(message = "종료일을 선택하세요.")
     private LocalDate endDate;
+
+    // --- 초기 경유지 ---
+    private Integer initialDayOrder;     // null 이면 입력 안 한 것
+    private String initialPlaceName;
+    private String initialAddress;
+    private String initialMemo;
+    private BigDecimal initialCost;
 
     public TripPlanCreateDTO() {}
 
@@ -28,12 +38,4 @@ public class TripPlanCreateDTO {
     public boolean isDateRangeValid() {
         return startDate != null && endDate != null && !endDate.isBefore(startDate);
     }
-
-    public String getTitle() { return title; }
-    public LocalDate getStartDate() { return startDate; }
-    public LocalDate getEndDate() { return endDate; }
-
-    public void setTitle(String title) { this.title = title; }
-    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
-    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
 }
