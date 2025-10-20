@@ -19,6 +19,10 @@
     </style>
 </head>
 <body>
+<div th:replace="~{fragments/header :: siteHeader('trips')}"></div>
+
+<main style="padding:16px 0;">
+
 <h1>여행 계획 등록</h1>
 
 <form th:action="@{/trips}" method="post" th:object="${form}">
@@ -83,5 +87,8 @@
         <a th:href="@{/trips}" style="color:#0064ff; text-decoration:none;">목록</a>
     </div>
 </form>
+</main>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
 </body>
 </html>

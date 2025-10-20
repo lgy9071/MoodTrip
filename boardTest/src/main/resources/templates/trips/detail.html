@@ -19,145 +19,209 @@
         input[type=text], input[type=number], textarea { width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; }
         textarea { min-height: 80px; }
         .msg { background:#ecf9f1; border:1px solid #b7ebc6; padding:8px; margin-top:12px; color:#18794e; }
+
+        /* 모달 기본 스타일 */
+        #editStopModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:9999; }
+        #editStopModal .dialog {
+            background:#fff; width:520px; max-width:calc(100% - 24px);
+            margin:10vh auto; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.15); overflow:hidden;
+        }
+        #editStopModal .dialog-header {
+            padding:14px 16px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;
+        }
+        #editStopModal .dialog-body { padding:16px; }
     </style>
 </head>
 <body>
+<div th:replace="~{fragments/header :: siteHeader('trips')}"></div>
 
-<!-- BigDecimal 상수 별칭 -->
-<div th:with="BDONE=${T(java.math.BigDecimal).ONE}, BDZERO=${T(java.math.BigDecimal).ZERO}">
+<main style="padding:16px 0;">
+    <!-- BigDecimal 상수 별칭 -->
+    <div th:with="BDONE=${T(java.math.BigDecimal).ONE}, BDZERO=${T(java.math.BigDecimal).ZERO}">
 
-    <div class="header">
-        <div>
-            <h1 th:text="${plan.title}">여행 제목</h1>
-            <div class="muted" th:text="${plan.startDate} + ' ~ ' + ${plan.endDate}"></div>
-            <!-- 작성자 표시 -->
-            <div class="muted">
-                작성자:
-                <span th:text="${plan.owner != null && plan.owner.name != null ? plan.owner.name : (plan.owner != null ? plan.owner.username : '알 수 없음')}"></span>
+        <div class="header">
+            <div>
+                <h1 th:text="${plan.title}">여행 제목</h1>
+                <div class="muted" th:text="${plan.startDate} + ' ~ ' + ${plan.endDate}"></div>
+                <!-- 작성자 표시 -->
+                <div class="muted">
+                    작성자:
+                    <span th:text="${plan.owner != null && plan.owner.name != null ? plan.owner.name : (plan.owner != null ? plan.owner.username : '알 수 없음')}"></span>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <a class="btn" th:href="@{/trips}">목록</a>
+                <!-- 소유자만 계획 삭제 노출 -->
+                <div th:if="${isOwner}">
+                    <form th:action="@{|/trips/${plan.id}/delete|}" method="post"
+                          onsubmit="return confirm('정말 삭제하시겠습니까?');" style="display:inline;">
+                        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+                        <button type="submit" class="btn btn-danger">계획 삭제</button>
+                    </form>
+                </div>
             </div>
         </div>
-        <div style="display:flex; gap:8px; align-items:center;">
-            <a class="btn" th:href="@{/trips}">목록</a>
-            <!-- 소유자만 계획 삭제 노출 -->
-            <div th:if="${isOwner}">
-                <form th:action="@{|/trips/${plan.id}/delete|}" method="post"
-                      onsubmit="return confirm('정말 삭제하시겠습니까?');" style="display:inline;">
-                    <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
-                    <button type="submit" class="btn btn-danger">계획 삭제</button>
-                </form>
-            </div>
-        </div>
-    </div>
 
-    <div th:if="${msg}" class="msg" th:text="${msg}"></div>
+        <div th:if="${msg}" class="msg" th:text="${msg}"></div>
 
-    <div class="wrap">
-        <!-- 좌측: 경유지 목록 -->
-        <div>
-            <h2>경유지 목록</h2>
+        <div class="wrap">
+            <!-- 좌측: 경유지 목록 -->
+            <div>
+                <h2>경유지 목록</h2>
 
-            <!-- 총 비용: .00이면 소수점 제거 -->
-            <div class="muted" style="margin:6px 0 10px"
-                 th:with="plain=${totalCost != null and totalCost.remainder(BDONE).compareTo(BDZERO)==0}">
-                총 비용:
-                <b th:text="${plain} ? ${#numbers.formatDecimal(totalCost,0,'COMMA',0,'POINT')}
+                <!-- 총 비용: .00이면 소수점 제거 -->
+                <div class="muted" style="margin:6px 0 10px"
+                     th:with="plain=${totalCost != null and totalCost.remainder(BDONE).compareTo(BDZERO)==0}">
+                    총 비용:
+                    <b th:text="${plain} ? ${#numbers.formatDecimal(totalCost,0,'COMMA',0,'POINT')}
                              : ${#numbers.formatDecimal(totalCost,0,'COMMA',2,'POINT')}"></b> 원
-            </div>
+                </div>
 
-            <table>
-                <thead>
-                <tr>
-                    <th style="width:80px;">일차</th>
-                    <th>장소명</th>
-                    <th>주소</th>
-                    <th>메모</th>
-                    <th style="width:120px;">비용</th>
-                    <!-- 소유자일 때만 액션 컬럼 헤더 자체 렌더 -->
-                    <th style="width:180px;" th:if="${isOwner}">액션</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="s : ${stops}">
-                    <td>
-                        <div th:text="${s.dayOrder}"></div>
-                        <!-- 일차 합계: .00이면 소수점 제거 -->
-                        <div class="muted" style="font-size:12px"
-                             th:if="${dayCost[s.dayOrder]} != null"
-                             th:with="dc=${dayCost[s.dayOrder]}, plain=${dc.remainder(BDONE).compareTo(BDZERO)==0}"
-                             th:text="'(일차 합계 ' +
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:80px;">일차</th>
+                        <th>장소명</th>
+                        <th>주소</th>
+                        <th>메모</th>
+                        <th style="width:120px;">비용</th>
+                        <!-- 소유자일 때만 액션 컬럼 헤더 자체 렌더 -->
+                        <th style="width:180px;" th:if="${isOwner}">액션</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${stops}">
+                        <td>
+                            <div th:text="${s.dayOrder}"></div>
+                            <!-- 일차 합계: .00이면 소수점 제거 -->
+                            <div class="muted" style="font-size:12px"
+                                 th:if="${dayCost[s.dayOrder]} != null"
+                                 th:with="dc=${dayCost[s.dayOrder]}, plain=${dc.remainder(BDONE).compareTo(BDZERO)==0}"
+                                 th:text="'(일차 합계 ' +
                           (${plain} ? ${#numbers.formatDecimal(dc,0,'COMMA',0,'POINT')}
                                     : ${#numbers.formatDecimal(dc,0,'COMMA',2,'POINT')})
                           + '원)'"></div>
-                    </td>
-                    <td th:text="${s.placeName}"></td>
-                    <td th:text="${s.address} ?: '-'"></td>
-                    <td th:text="${s.memo} ?: '-'"></td>
+                        </td>
+                        <td th:text="${s.placeName}"></td>
+                        <td th:text="${s.address} ?: '-'"></td>
+                        <td th:text="${s.memo} ?: '-'"></td>
 
-                    <!-- 개별 비용: .00이면 소수점 제거 -->
-                    <td th:with="c=${s.cost != null ? s.cost : BDZERO},
+                        <!-- 개별 비용: .00이면 소수점 제거 -->
+                        <td th:with="c=${s.cost != null ? s.cost : BDZERO},
                        plain=${c.remainder(BDONE).compareTo(BDZERO)==0}"
-                        th:text="${plain} ? ${#numbers.formatDecimal(c,0,'COMMA',0,'POINT')}
+                            th:text="${plain} ? ${#numbers.formatDecimal(c,0,'COMMA',0,'POINT')}
                                 : ${#numbers.formatDecimal(c,0,'COMMA',2,'POINT')}"></td>
 
-                    <!-- 소유자일 때만 액션 셀 자체 렌더 -->
-                    <td th:if="${isOwner}">
-                        <div class="row-actions">
-                            <button class="btn" th:attr="data-id=${s.id}" onclick="moveDay(this, -1)">-1일</button>
-                            <button class="btn" th:attr="data-id=${s.id}" onclick="moveDay(this, 1)">+1일</button>
-                            <button class="btn btn-danger" th:attr="data-id=${s.id}" onclick="removeStop(this)">삭제</button>
-                        </div>
-                    </td>
-                </tr>
+                        <!-- 소유자일 때만 액션 셀 자체 렌더 -->
+                        <td th:if="${isOwner}">
+                            <div class="row-actions">
+                                <!-- 수정 버튼(모달 오픈): 현재 값 data-*로 전달 -->
+                                <button class="btn"
+                                        th:attr="data-id=${s.id},
+                                             data-day=${s.dayOrder},
+                                             data-place=${s.placeName},
+                                             data-address=${s.address} ?: '',
+                                             data-memo=${s.memo} ?: '',
+                                             data-cost=${s.cost} ?: 0"
+                                        onclick="openEditStop(this)">수정</button>
 
-                <tr th:if="${#lists.isEmpty(stops)}">
-                    <!-- isOwner 여부에 따라 colspan 조정 (액션 컬럼 유무) -->
-                    <td th:attr="colspan=${isOwner} ? 6 : 5"
-                        style="text-align:center;color:#888;">경유지가 없습니다.</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+                                <button class="btn btn-danger" th:attr="data-id=${s.id}" onclick="removeStop(this)">삭제</button>
+                            </div>
+                        </td>
+                    </tr>
 
-        <!-- 우측: 경유지 추가 폼 (소유자만) -->
-        <div>
-            <h2>경유지 추가</h2>
-            <div th:if="${isOwner}">
-                <form th:action="@{|/trips/${plan.id}/stops|}" method="post" th:object="${stopForm}">
-                    <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
-                    <div style="display:grid; gap:12px;">
-                        <div>
-                            <label>일차</label>
-                            <input type="number" min="1" th:field="*{dayOrder}" />
-                            <div class="err" th:if="${#fields.hasErrors('dayOrder')}" th:errors="*{dayOrder}"></div>
-                        </div>
-                        <div>
-                            <label>장소명</label>
-                            <input type="text" th:field="*{placeName}" placeholder="예) 도톤보리"/>
-                            <div class="err" th:if="${#fields.hasErrors('placeName')}" th:errors="*{placeName}"></div>
-                        </div>
-                        <div>
-                            <label>주소(선택)</label>
-                            <input type="text" th:field="*{address}" placeholder="예) 오사카부 오사카시…"/>
-                        </div>
-                        <div>
-                            <label>메모</label>
-                            <textarea th:field="*{memo}" placeholder="추천 메뉴, 입장시간 등"></textarea>
-                        </div>
-                        <div>
-                            <label>비용(원)</label>
-                            <input type="number" step="0.01" min="0" th:field="*{cost}" placeholder="예) 12000"/>
-                            <div class="err" th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}"></div>
-                        </div>
-                        <div>
-                            <button class="btn btn-primary" type="submit">추가</button>
-                        </div>
-                    </div>
-                </form>
+                    <tr th:if="${#lists.isEmpty(stops)}">
+                        <!-- isOwner 여부에 따라 colspan 조정 (액션 컬럼 유무) -->
+                        <td th:attr="colspan=${isOwner} ? 6 : 5"
+                            style="text-align:center;color:#888;">경유지가 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
-            <div th:if="${!isOwner}" class="muted">이 계획은 읽기 전용입니다.</div>
+
+            <!-- 우측: 경유지 추가 폼 (소유자만) -->
+            <div>
+                <h2>경유지 추가</h2>
+                <div th:if="${isOwner}">
+                    <form th:action="@{|/trips/${plan.id}/stops|}" method="post" th:object="${stopForm}">
+                        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+                        <div style="display:grid; gap:12px;">
+                            <div>
+                                <label>일차</label>
+                                <input type="number" min="1" th:field="*{dayOrder}" />
+                                <div class="err" th:if="${#fields.hasErrors('dayOrder')}" th:errors="*{dayOrder}"></div>
+                            </div>
+                            <div>
+                                <label>장소명</label>
+                                <input type="text" th:field="*{placeName}" placeholder="예) 도톤보리"/>
+                                <div class="err" th:if="${#fields.hasErrors('placeName')}" th:errors="*{placeName}"></div>
+                            </div>
+                            <div>
+                                <label>주소(선택)</label>
+                                <input type="text" th:field="*{address}" placeholder="예) 오사카부 오사카시…"/>
+                            </div>
+                            <div>
+                                <label>메모</label>
+                                <textarea th:field="*{memo}" placeholder="추천 메뉴, 입장시간 등"></textarea>
+                            </div>
+                            <div>
+                                <label>비용(원)</label>
+                                <input type="number" step="0.01" min="0" th:field="*{cost}" placeholder="예) 12000"/>
+                                <div class="err" th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}"></div>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary" type="submit">추가</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div th:if="${!isOwner}" class="muted">이 계획은 읽기 전용입니다.</div>
+            </div>
         </div>
+    </div> <!-- /with BD constants -->
+</main>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
+
+<!-- 수정 모달 -->
+<div id="editStopModal">
+    <div class="dialog">
+        <div class="dialog-header">
+            <strong>경유지 수정</strong>
+            <button type="button" class="btn" onclick="closeEditStop()">닫기</button>
+        </div>
+        <form id="editStopForm" class="dialog-body" onsubmit="saveEditStop(event)">
+            <input type="hidden" name="id" />
+            <div style="display:grid; gap:12px;">
+                <div>
+                    <label>일차</label>
+                    <input type="number" name="dayOrder" min="1" required class="input"/>
+                </div>
+                <div>
+                    <label>장소명</label>
+                    <input type="text" name="placeName" required class="input" placeholder="예) 도톤보리"/>
+                </div>
+                <div>
+                    <label>주소(선택)</label>
+                    <input type="text" name="address" class="input" placeholder="예) 오사카부 오사카시…"/>
+                </div>
+                <div>
+                    <label>메모</label>
+                    <textarea name="memo" class="input" placeholder="추천 메뉴, 입장시간 등" style="min-height:80px;"></textarea>
+                </div>
+                <div>
+                    <label>비용(원)</label>
+                    <input type="number" name="cost" step="0.01" min="0" class="input" placeholder="예) 12000"/>
+                </div>
+
+                <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:4px;">
+                    <button type="button" class="btn" onclick="closeEditStop()">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </div>
+        </form>
     </div>
-</div> <!-- /with BD constants -->
+</div>
 
 <script th:inline="javascript">
     async function removeStop(btn) {
@@ -172,7 +236,68 @@
       else alert('삭제 실패');
     }
 
-    async function moveDay(btn, delta) { // delta는 현재는 사용 안 함(직접 입력 방식)
+    // ===== 전체 수정 모달 로직 =====
+    const modal = document.getElementById('editStopModal');
+    const form  = document.getElementById('editStopForm');
+
+    function openEditStop(btn) {
+      const ds = btn.dataset;
+      form.id.value           = ds.id;
+      form.dayOrder.value     = ds.day;
+      form.placeName.value    = ds.place || '';
+      form.address.value      = ds.address || '';
+      form.memo.value         = ds.memo || '';
+      form.cost.value         = (ds.cost !== undefined && ds.cost !== null) ? ds.cost : '';
+      modal.style.display = 'block';
+    }
+    function closeEditStop() { modal.style.display = 'none'; }
+
+    // 모달 바깥 클릭 시 닫기
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) closeEditStop();
+    });
+
+    async function saveEditStop(e) {
+      e.preventDefault();
+      const id   = form.id.value;
+      const body = {
+        dayOrder:   Number(form.dayOrder.value),
+        placeName:  form.placeName.value?.trim(),
+        address:    form.address.value?.trim() || null,
+        memo:       form.memo.value?.trim() || null,
+        cost:       form.cost.value === '' ? null : Number(form.cost.value)
+      };
+
+      if (!body.placeName) { alert('장소명을 입력해주세요.'); return; }
+      if (!body.dayOrder || body.dayOrder < 1) { alert('일차는 1 이상의 숫자여야 합니다.'); return; }
+
+      const tokenValue = /*[[${_csrf?.token}]]*/ '';
+      try {
+        const res = await fetch(`/trips/stops/${id}`, {
+          method: 'PUT', // 전체 수정
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            ...(tokenValue ? {'X-CSRF-TOKEN': tokenValue} : {})
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          closeEditStop();
+          location.reload();
+        } else {
+          const msg = await res.text();
+          alert('수정 실패: ' + (msg || res.status));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('네트워크 오류로 수정에 실패했습니다.');
+      }
+    }
+
+    // (참고) 기존 일차만 이동하는 함수가 필요하면 남겨둠
+    async function moveDay(btn, delta) { // 현재 미사용
       const id = btn.getAttribute('data-id');
       const tokenValue = /*[[${_csrf?.token}]]*/ '';
       const newDay = prompt('변경할 일차를 입력하세요(숫자):');
