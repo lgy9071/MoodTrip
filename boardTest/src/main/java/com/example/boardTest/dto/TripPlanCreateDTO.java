@@ -38,4 +38,9 @@ public class TripPlanCreateDTO {
     public boolean isDateRangeValid() {
         return startDate != null && endDate != null && !endDate.isBefore(startDate);
     }
+
+    // 초기 경유지 블록을 채웠는지 여부
+    public boolean hasInitialStop() {
+        return initialPlaceName != null && !initialPlaceName.isBlank();
+    }
 }

@@ -33,21 +33,27 @@
             <th>#</th>
             <th>제목</th>
             <th>기간</th>
+            <th>작성자</th>
             <th>작성일</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="p : ${plans.content}">
-            <td th:text="${p.id}"></td>
-            <td>
-                <a th:href="@{|/trips/${p.id}|}" th:text="${p.title}"></a>
-            </td>
+        <tr th:each="p, i : ${plans.content}">
+            <!-- 번호: 페이지 내 1,2,3… 이면 i.count / 전체 역순이면 아래 주석 참고 -->
+            <td th:text="${i.count}"></td>
+            <!-- 전체 역순 : th:text="${plans.totalElements - (plans.number * plans.size) - i.index}" -->
+
+            <td><a th:href="@{|/trips/${p.id}|}" th:text="${p.title}"></a></td>
             <td th:text="${p.startDate} + ' ~ ' + ${p.endDate}"></td>
+
+            <!-- 작성자 출력 -->
+            <td th:text="${p.owner != null && p.owner.name != null ? p.owner.name : (p.owner != null ? p.owner.username : '-')}"></td>
+
             <!-- createdAt null-safe -->
             <td th:text="${p.createdAt != null ? #temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
         </tr>
         <tr th:if="${plans.content.size()==0}">
-            <td colspan="4" style="text-align:center;color:#888;">등록된 여행 계획이 없습니다.</td>
+            <td colspan="5" style="text-align:center;color:#888;">등록된 여행 계획이 없습니다.</td>
         </tr>
         </tbody>
     </table>

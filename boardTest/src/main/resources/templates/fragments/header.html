@@ -6,52 +6,130 @@
 </head>
 <body>
 <header th:fragment="siteHeader(active)">
-    <div style="display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:1px solid #eee;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;">
 
-        <!-- 상단 바 -->
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-            <a href="/" th:text="#{app.title}">MoodTrip</a>
+        <!-- 좌측: 로고 -->
+        <a href="/" th:text="#{app.title}" style="text-decoration:none;color:#222;font-weight:700;font-size:20px;">MoodTrip</a>
 
-            <nav style="display:flex;gap:12px;">
-                <a href="/trips"   th:text="#{nav.trips}">여행</a>
-                <a href="/places"  th:text="#{nav.places}">맛집</a>
-                <a href="/reviews" th:text="#{nav.reviews}">리뷰</a>
-                <a href="/coming-soon" th:text="#{nav.videos}">영상</a>
-                <a href="/coming-soon" th:text="#{nav.products}">용품</a>
-            </nav>
+        <!-- 중앙: 네비 -->
+        <nav style="display:flex;gap:12px;flex:1;justify-content:center;">
+            <a href="/trips"   th:text="#{nav.trips}">여행</a>
+            <a href="/places"  th:text="#{nav.places}">맛집</a>
+            <a href="/reviews" th:text="#{nav.reviews}">리뷰</a>
+            <a href="/coming-soon" th:text="#{nav.videos}">영상</a>
+            <a href="/coming-soon" th:text="#{nav.products}">용품</a>
+        </nav>
 
-            <span>|</span>
-            <a th:href="@{?lang=ko}">KO</a>
-            <a th:href="@{?lang=en}">EN</a>
-            <a th:href="@{?lang=uk}">UK</a>
+        <!-- 우측: 로그인/언어 드롭다운 -->
+        <div style="display:flex;align-items:center;gap:12px;position:relative;">
 
-            <!-- 우측 인증 영역: (비로그인) 로그인/회원가입, (로그인) 로그아웃 -->
-            <div>
-                <!-- 비로그인 -->
-                <span th:if="${session.LOGIN_USER == null}">
-          <a href="/login"  th:text="#{auth.login}">로그인</a>
-            <a href="/signup" th:text="#{auth.signup}">회원가입</a>
-        </span>
+            <!-- 로그인 상태 -->
+            <span th:if="${session.LOGIN_USER == null}">
+        <a href="/login"  th:text="#{auth.login}"  style="margin-right:6px;">로그인</a>
+        <a href="/signup" th:text="#{auth.signup}">회원가입</a>
+      </span>
+            <span th:if="${session.LOGIN_USER != null}">
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+          <button type="submit" th:text="#{auth.logout}" style="background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;">로그아웃</button>
+        </form>
+      </span>
 
-                <!-- 로그인 -->
-                <span th:if="${session.LOGIN_USER != null}">
-          <form th:action="@{/logout}" method="post" style="display:inline;">
-            <button type="submit" th:text="#{auth.logout}">로그아웃</button>
-          </form>
-        </span>
+            <!-- 언어 선택 드롭다운 -->
+            <div class="lang-dropdown">
+                <button class="lang-toggle">
+                    🌐 <span th:text="${#locale.language?.toUpperCase()}">KO</span> ▼
+                </button>
+                <div class="lang-menu">
+                    <a th:href="@{?lang=ko}" th:classappend="${#locale.language=='ko'} ? 'active'">KO</a>
+                    <a th:href="@{?lang=en}" th:classappend="${#locale.language=='en'} ? 'active'">EN</a>
+                    <a th:href="@{?lang=uk}" th:classappend="${#locale.language=='uk'} ? 'active'">UK</a>
+                </div>
             </div>
-        </div>
-
-        <!-- 로그아웃 후 안내 배너 -->
-        <div th:if="${param.loggedOut}" style="background:#f5faff;border:1px solid #d6e9ff;color:#184a8b;padding:10px 12px;border-radius:8px;">
-            정상적으로 로그아웃되었습니다.
         </div>
     </div>
 
+    <!-- 로그아웃 안내 -->
+    <div th:if="${param.loggedOut}"
+         style="margin-top:8px;background:#f5faff;border:1px solid #d6e9ff;color:#184a8b;padding:8px 10px;border-radius:8px;">
+        정상적으로 로그아웃되었습니다.
+    </div>
+
     <style>
-        header a{color:#333;text-decoration:none;padding:6px 8px;border-radius:6px}
-        header a.active{background:#1976d2;color:#fff}
-        header button{background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer}
+        header a { color:#333; text-decoration:none; padding:6px 8px; border-radius:6px }
+        header a.active { background:#1976d2; color:#fff }
+        header button { background:#1976d2; color:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer }
+
+        /* 언어 드롭다운 */
+        .lang-dropdown {
+          position:relative;
+          display:inline-block; /* hover 범위 안정화 */
+        }
+        .lang-toggle {
+          background:transparent;
+          border:1px solid #ddd;
+          border-radius:6px;
+          padding:4px 8px;
+          font-size:12px;
+          cursor:pointer;
+          color:#444;
+          line-height:1;           /* 라인박스 여백 최소화 */
+        }
+        .lang-toggle:hover { background:#f8f9fa; }
+
+        .lang-menu {
+          position:absolute;
+          right:0;
+          top:100%;                /* 버튼 바로 아래에 ‘밀착’ */
+          margin-top:0;            /* 간격 제거 */
+          background:#fff;
+          border:1px solid #ddd;
+          border-radius:6px;
+          box-shadow:0 4px 10px rgba(0,0,0,.08);
+          z-index:10;
+          min-width:70px;
+
+          /* 초기엔 숨김 + 슬라이드다운 애니메이션 준비 */
+          display:block;           /* 트랜지션 위해 block 유지 */
+          opacity:0;
+          visibility:hidden;
+          transform:translateY(-6px) scaleY(.98);
+          transform-origin:top;
+          transition:
+            opacity .18s ease,
+            transform .18s ease,
+            visibility 0s linear .18s; /* 닫힐 때만 지연 */
+        }
+        .lang-menu a {
+          display:block;
+          padding:6px 10px;
+          font-size:12px;
+          color:#333;
+          text-decoration:none;
+          white-space:nowrap;
+        }
+        .lang-menu a:hover { background:#f1f5f9; }
+        .lang-menu a.active { background:#1976d2; color:#fff; }
+
+        /* hover 또는 키보드 포커스로 열기 */
+        .lang-dropdown:hover .lang-menu,
+        .lang-dropdown:focus-within .lang-menu {
+          opacity:1;
+          visibility:visible;
+          transform:translateY(0) scaleY(1);
+          transition:
+            opacity .18s ease,
+            transform .18s ease,
+            visibility 0s; /* 열릴 때 즉시 보이기 */
+        }
+
+        /* 혹시 모를 1~2px 끊김 방지용(투명 히트존) - 필요 없으면 제거해도 됨 */
+        .lang-dropdown::after {
+          content:"";
+          position:absolute;
+          left:0; right:0;
+          top:100%;
+          height:2px;              /* 시각적 공간은 0, hover만 이어줌 */
+        }
     </style>
 </header>
 </body>

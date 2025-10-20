@@ -65,7 +65,20 @@ public class TripController {
             return "trips/new";
         }
 
-        tripService.createPlan(form.getTitle(), form.getStartDate(), form.getEndDate(), loginUser);
+        TripPlan plan = tripService.createPlan(form.getTitle(), form.getStartDate(), form.getEndDate(), loginUser);
+
+        // 초기 경유지 입력했다면 함께 저장
+        if (form.hasInitialStop()) {
+            TripStopCreateDTO stopDto = new TripStopCreateDTO(
+                    form.getInitialDayOrder() != null ? form.getInitialDayOrder() : 1,
+                    form.getInitialPlaceName(),
+                    form.getInitialAddress(),
+                    form.getInitialMemo(),
+                    form.getInitialCost() != null ? form.getInitialCost() : BigDecimal.ZERO
+            );
+            tripService.addStop(plan.getId(), stopDto, loginUser);
+        }
+
         ra.addFlashAttribute("msg", "여행 계획을 등록했습니다.");
         return "redirect:/trips";
     }

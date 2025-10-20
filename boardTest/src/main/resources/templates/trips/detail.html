@@ -1,168 +1,190 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-  <meta charset="UTF-8"/>
-  <title th:text="${plan.title} + ' - 상세'">여행 상세</title>
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 24px; }
-    .header { display:flex; justify-content: space-between; align-items: center; }
-    .muted { color:#666; }
-    .btn { padding: 6px 10px; border:1px solid #ccc; background:#fff; cursor:pointer; text-decoration:none; border-radius:6px; }
-    .btn-danger { background:#e74c3c; color:#fff; border-color:#e74c3c; }
-    .btn-primary { background:#0064ff; color:#fff; border-color:#0064ff; }
-    .wrap { display:grid; grid-template-columns: 1fr 420px; gap: 24px; margin-top:16px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-    th { background: #f5f7fa; }
-    .row-actions { display:flex; gap:8px; }
-    .err { color:#c22727; font-size: 0.9em; }
-    input[type=text], input[type=number], textarea { width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; }
-    textarea { min-height: 80px; }
-    .msg { background:#ecf9f1; border:1px solid #b7ebc6; padding:8px; margin-top:12px; color:#18794e; }
-  </style>
+    <meta charset="UTF-8"/>
+    <title th:text="${plan.title} + ' - 상세'">여행 상세</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        .header { display:flex; justify-content: space-between; align-items: center; }
+        .muted { color:#666; }
+        .btn { padding: 6px 10px; border:1px solid #ccc; background:#fff; cursor:pointer; text-decoration:none; border-radius:6px; }
+        .btn-danger { background:#e74c3c; color:#fff; border-color:#e74c3c; }
+        .btn-primary { background:#0064ff; color:#fff; border-color:#0064ff; }
+        .wrap { display:grid; grid-template-columns: 1fr 420px; gap: 24px; margin-top:16px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+        th { background: #f5f7fa; }
+        .row-actions { display:flex; gap:8px; }
+        .err { color:#c22727; font-size: 0.9em; }
+        input[type=text], input[type=number], textarea { width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; }
+        textarea { min-height: 80px; }
+        .msg { background:#ecf9f1; border:1px solid #b7ebc6; padding:8px; margin-top:12px; color:#18794e; }
+    </style>
 </head>
 <body>
 
-<div class="header">
-  <div>
-    <h1 th:text="${plan.title}">여행 제목</h1>
-    <div class="muted" th:text="${plan.startDate} + ' ~ ' + ${plan.endDate}"></div>
-  </div>
-  <div style="display:flex; gap:8px; align-items:center;">
-    <a class="btn" th:href="@{/trips}">목록</a>
+<!-- BigDecimal 상수 별칭 -->
+<div th:with="BDONE=${T(java.math.BigDecimal).ONE}, BDZERO=${T(java.math.BigDecimal).ZERO}">
 
-    <!-- 소유자만 삭제 가능 -->
-    <div th:if="${isOwner}">
-      <form th:action="@{|/trips/${plan.id}/delete|}" method="post"
-            onsubmit="return confirm('정말 삭제하시겠습니까?');" style="display:inline;">
-        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
-        <button type="submit" class="btn btn-danger">계획 삭제</button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div th:if="${msg}" class="msg" th:text="${msg}"></div>
-
-<div class="wrap">
-  <!-- 좌측: 경유지 목록 -->
-  <div>
-    <h2>경유지 목록</h2>
-    <div class="muted" style="margin:6px 0 10px">
-      총 비용: <b th:text="${#numbers.formatDecimal(totalCost, 0, 'COMMA', 2, 'POINT')}"></b> 원
-    </div>
-
-    <table>
-      <thead>
-      <tr>
-        <th style="width:80px;">일차</th>
-        <th>장소명</th>
-        <th>주소</th>
-        <th>메모</th>
-        <th style="width:120px;">비용</th>
-        <th style="width:180px;">액션</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="s : ${stops}">
-        <td>
-          <div th:text="${s.dayOrder}"></div>
-          <div class="muted" style="font-size:12px"
-               th:if="${dayCost[s.dayOrder]} != null"
-               th:text="'(일차 합계 ' + ${#numbers.formatDecimal(dayCost[s.dayOrder],0,'COMMA',2,'POINT')} + '원)'"></div>
-        </td>
-        <td th:text="${s.placeName}"></td>
-        <td th:text="${s.address} ?: '-'"></td>
-        <td th:text="${s.memo} ?: '-'"></td>
-        <td th:text="${s.cost != null ? #numbers.formatDecimal(s.cost,0,'COMMA',2,'POINT') : '0'}"></td>
-        <td class="row-actions">
-          <button class="btn" th:attr="data-id=${s.id}" onclick="moveDay(this, -1)">-1일</button>
-          <button class="btn" th:attr="data-id=${s.id}" onclick="moveDay(this, 1)">+1일</button>
-
-          <!-- 소유자만 삭제 버튼 노출 -->
-          <div th:if="${isOwner}">
-            <button class="btn btn-danger" th:attr="data-id=${s.id}" onclick="removeStop(this)">삭제</button>
-          </div>
-        </td>
-      </tr>
-
-      <tr th:if="${#lists.isEmpty(stops)}">
-        <td colspan="6" style="text-align:center;color:#888;">경유지가 없습니다.</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 우측: 경유지 추가 폼 -->
-  <div>
-    <h2>경유지 추가</h2>
-
-    <!-- 소유자만 추가 가능 -->
-    <div th:if="${isOwner}">
-      <form th:action="@{|/trips/${plan.id}/stops|}" method="post" th:object="${stopForm}">
-        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
-        <div style="display:grid; gap:12px;">
-          <div>
-            <label>일차</label>
-            <input type="number" min="1" th:field="*{dayOrder}" />
-            <div class="err" th:if="${#fields.hasErrors('dayOrder')}" th:errors="*{dayOrder}"></div>
-          </div>
-          <div>
-            <label>장소명</label>
-            <input type="text" th:field="*{placeName}" placeholder="예) 도톤보리"/>
-            <div class="err" th:if="${#fields.hasErrors('placeName')}" th:errors="*{placeName}"></div>
-          </div>
-          <div>
-            <label>주소(선택)</label>
-            <input type="text" th:field="*{address}" placeholder="예) 오사카부 오사카시…"/>
-          </div>
-          <div>
-            <label>메모</label>
-            <textarea th:field="*{memo}" placeholder="추천 메뉴, 입장시간 등"></textarea>
-          </div>
-          <div>
-            <label>비용(원)</label>
-            <input type="number" step="0.01" min="0" th:field="*{cost}" placeholder="예) 12000"/>
-            <div class="err" th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}"></div>
-          </div>
-          <div>
-            <button class="btn btn-primary" type="submit">추가</button>
-          </div>
+    <div class="header">
+        <div>
+            <h1 th:text="${plan.title}">여행 제목</h1>
+            <div class="muted" th:text="${plan.startDate} + ' ~ ' + ${plan.endDate}"></div>
+            <!-- 작성자 표시 -->
+            <div class="muted">
+                작성자:
+                <span th:text="${plan.owner != null && plan.owner.name != null ? plan.owner.name : (plan.owner != null ? plan.owner.username : '알 수 없음')}"></span>
+            </div>
         </div>
-      </form>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <a class="btn" th:href="@{/trips}">목록</a>
+            <!-- 소유자만 계획 삭제 노출 -->
+            <div th:if="${isOwner}">
+                <form th:action="@{|/trips/${plan.id}/delete|}" method="post"
+                      onsubmit="return confirm('정말 삭제하시겠습니까?');" style="display:inline;">
+                    <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+                    <button type="submit" class="btn btn-danger">계획 삭제</button>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <!-- 비소유자 안내 -->
-    <div th:if="${!isOwner}" class="muted">이 계획은 읽기 전용입니다.</div>
-  </div>
-</div>
+    <div th:if="${msg}" class="msg" th:text="${msg}"></div>
+
+    <div class="wrap">
+        <!-- 좌측: 경유지 목록 -->
+        <div>
+            <h2>경유지 목록</h2>
+
+            <!-- 총 비용: .00이면 소수점 제거 -->
+            <div class="muted" style="margin:6px 0 10px"
+                 th:with="plain=${totalCost != null and totalCost.remainder(BDONE).compareTo(BDZERO)==0}">
+                총 비용:
+                <b th:text="${plain} ? ${#numbers.formatDecimal(totalCost,0,'COMMA',0,'POINT')}
+                             : ${#numbers.formatDecimal(totalCost,0,'COMMA',2,'POINT')}"></b> 원
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th style="width:80px;">일차</th>
+                    <th>장소명</th>
+                    <th>주소</th>
+                    <th>메모</th>
+                    <th style="width:120px;">비용</th>
+                    <!-- 소유자일 때만 액션 컬럼 헤더 자체 렌더 -->
+                    <th style="width:180px;" th:if="${isOwner}">액션</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${stops}">
+                    <td>
+                        <div th:text="${s.dayOrder}"></div>
+                        <!-- 일차 합계: .00이면 소수점 제거 -->
+                        <div class="muted" style="font-size:12px"
+                             th:if="${dayCost[s.dayOrder]} != null"
+                             th:with="dc=${dayCost[s.dayOrder]}, plain=${dc.remainder(BDONE).compareTo(BDZERO)==0}"
+                             th:text="'(일차 합계 ' +
+                          (${plain} ? ${#numbers.formatDecimal(dc,0,'COMMA',0,'POINT')}
+                                    : ${#numbers.formatDecimal(dc,0,'COMMA',2,'POINT')})
+                          + '원)'"></div>
+                    </td>
+                    <td th:text="${s.placeName}"></td>
+                    <td th:text="${s.address} ?: '-'"></td>
+                    <td th:text="${s.memo} ?: '-'"></td>
+
+                    <!-- 개별 비용: .00이면 소수점 제거 -->
+                    <td th:with="c=${s.cost != null ? s.cost : BDZERO},
+                       plain=${c.remainder(BDONE).compareTo(BDZERO)==0}"
+                        th:text="${plain} ? ${#numbers.formatDecimal(c,0,'COMMA',0,'POINT')}
+                                : ${#numbers.formatDecimal(c,0,'COMMA',2,'POINT')}"></td>
+
+                    <!-- 소유자일 때만 액션 셀 자체 렌더 -->
+                    <td th:if="${isOwner}">
+                        <div class="row-actions">
+                            <button class="btn" th:attr="data-id=${s.id}" onclick="moveDay(this, -1)">-1일</button>
+                            <button class="btn" th:attr="data-id=${s.id}" onclick="moveDay(this, 1)">+1일</button>
+                            <button class="btn btn-danger" th:attr="data-id=${s.id}" onclick="removeStop(this)">삭제</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(stops)}">
+                    <!-- isOwner 여부에 따라 colspan 조정 (액션 컬럼 유무) -->
+                    <td th:attr="colspan=${isOwner} ? 6 : 5"
+                        style="text-align:center;color:#888;">경유지가 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 우측: 경유지 추가 폼 (소유자만) -->
+        <div>
+            <h2>경유지 추가</h2>
+            <div th:if="${isOwner}">
+                <form th:action="@{|/trips/${plan.id}/stops|}" method="post" th:object="${stopForm}">
+                    <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+                    <div style="display:grid; gap:12px;">
+                        <div>
+                            <label>일차</label>
+                            <input type="number" min="1" th:field="*{dayOrder}" />
+                            <div class="err" th:if="${#fields.hasErrors('dayOrder')}" th:errors="*{dayOrder}"></div>
+                        </div>
+                        <div>
+                            <label>장소명</label>
+                            <input type="text" th:field="*{placeName}" placeholder="예) 도톤보리"/>
+                            <div class="err" th:if="${#fields.hasErrors('placeName')}" th:errors="*{placeName}"></div>
+                        </div>
+                        <div>
+                            <label>주소(선택)</label>
+                            <input type="text" th:field="*{address}" placeholder="예) 오사카부 오사카시…"/>
+                        </div>
+                        <div>
+                            <label>메모</label>
+                            <textarea th:field="*{memo}" placeholder="추천 메뉴, 입장시간 등"></textarea>
+                        </div>
+                        <div>
+                            <label>비용(원)</label>
+                            <input type="number" step="0.01" min="0" th:field="*{cost}" placeholder="예) 12000"/>
+                            <div class="err" th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}"></div>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" type="submit">추가</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div th:if="${!isOwner}" class="muted">이 계획은 읽기 전용입니다.</div>
+        </div>
+    </div>
+</div> <!-- /with BD constants -->
 
 <script th:inline="javascript">
-  async function removeStop(btn) {
-    const id = btn.getAttribute('data-id');
-    if (!confirm('삭제하시겠습니까?')) return;
-    const tokenValue = /*[[${_csrf?.token}]]*/ '';
-    const res = await fetch(`/trips/stops/${id}`, {
-      method: 'DELETE',
-      headers: { 'X-Requested-With': 'XMLHttpRequest', ...(tokenValue ? {'X-CSRF-TOKEN': tokenValue} : {}) }
-    });
-    if (res.ok) location.reload();
-    else alert('삭제 실패');
-  }
+    async function removeStop(btn) {
+      const id = btn.getAttribute('data-id');
+      if (!confirm('삭제하시겠습니까?')) return;
+      const tokenValue = /*[[${_csrf?.token}]]*/ '';
+      const res = await fetch(`/trips/stops/${id}`, {
+        method: 'DELETE',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', ...(tokenValue ? {'X-CSRF-TOKEN': tokenValue} : {}) }
+      });
+      if (res.ok) location.reload();
+      else alert('삭제 실패');
+    }
 
-  async function moveDay(btn, delta) { // delta는 현재는 사용 안 함(직접 입력받는 UX)
-    const id = btn.getAttribute('data-id');
-    const tokenValue = /*[[${_csrf?.token}]]*/ '';
-    const newDay = prompt('변경할 일차를 입력하세요(숫자):');
-    if (!newDay) return;
-    const params = new URLSearchParams({ newDay });
-    const res = await fetch(`/trips/stops/${id}/day?` + params, {
-      method: 'PATCH',
-      headers: { 'X-Requested-With': 'XMLHttpRequest', ...(tokenValue ? {'X-CSRF-TOKEN': tokenValue} : {}) }
-    });
-    if (res.ok) location.reload();
-    else alert('이동 실패');
-  }
+    async function moveDay(btn, delta) { // delta는 현재는 사용 안 함(직접 입력 방식)
+      const id = btn.getAttribute('data-id');
+      const tokenValue = /*[[${_csrf?.token}]]*/ '';
+      const newDay = prompt('변경할 일차를 입력하세요(숫자):');
+      if (!newDay) return;
+      const params = new URLSearchParams({ newDay });
+      const res = await fetch(`/trips/stops/${id}/day?` + params, {
+        method: 'PATCH',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', ...(tokenValue ? {'X-CSRF-TOKEN': tokenValue} : {}) }
+      });
+      if (res.ok) location.reload();
+      else alert('이동 실패');
+    }
 </script>
 
 </body>
