@@ -46,14 +46,24 @@ public class AuthController {
     @PostMapping("/login")
     public String login(@RequestParam("username") String username,
                         @RequestParam("password") String password,
+                        @RequestParam(value = "next", required = false) String next,
                         HttpSession session,
                         Model model) {
         try {
             User u = userService.login(username, password);
             session.setAttribute(LOGIN_USER, u);
+
+            // next 파라미터가 있으면 해당 경로로 리다이렉트
+            if (next != null && !next.isBlank()) {
+                return "redirect:" + next;
+            }
+
+            // 기본 리다이렉트 경로
             return "redirect:/";
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
+            // 로그인 폼에서 next 파라미터 유지 (로그인 실패 시에도 다시 전달)
+            model.addAttribute("next", next);
             return "login";
         }
     }

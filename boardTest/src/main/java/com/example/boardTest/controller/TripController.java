@@ -14,8 +14,10 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriUtils;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +42,19 @@ public class TripController {
     }
 
     @GetMapping("/new")
-    public String newForm(Model model) {
+    public String newForm(Model model,
+                          RedirectAttributes ra,
+                          @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
+
+        if (loginUser == null) {
+            // 로그인 후 다시 돌아올 위치를 next에 담아 전달
+            String next = UriUtils.encode("/trips/new", StandardCharsets.UTF_8);
+            ra.addFlashAttribute("msg", "로그인이 필요합니다.");
+            return "redirect:/login?next=" + next;
+        }
+
         model.addAttribute("form",
-                new TripPlanCreateDTO("", LocalDate.now(), LocalDate.now().plusDays(2)));
+                           new TripPlanCreateDTO("", LocalDate.now(), LocalDate.now().plusDays(2)));
         return "trips/new";
     }
 
