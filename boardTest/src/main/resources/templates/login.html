@@ -2,16 +2,29 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>로그인</title>
 </head>
 <body>
-    <h1>게시판 로그인</h1>
-    <p th:if="${error}" th:text="${error}" style="color:red"></p>
-    <form method="post" action="/login">
+<h1>Mood Trip 로그인</h1>
+
+<!-- 오류 메시지 -->
+<p th:if="${error}" th:text="${error}" style="color:red"></p>
+
+<form method="post" action="/login">
+    <!-- next 파라미터를 숨겨서 전달 -->
+    <input type="hidden" name="next" th:value="${next}" />
+
+    <div>
         <input name="username" placeholder="아이디" required>
+    </div>
+    <div>
         <input name="password" type="password" placeholder="비밀번호" required>
+    </div>
+    <div>
         <button type="submit">로그인</button>
-    </form>
-    <a href="/signup">회원가입</a>
+    </div>
+</form>
+
+<a href="/signup">회원가입</a>
 </body>
 </html>
