@@ -23,11 +23,11 @@
         /* 모달 기본 스타일 */
         #editStopModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:9999; }
         #editStopModal .dialog {
-            background:#fff; width:520px; max-width:calc(100% - 24px);
-            margin:10vh auto; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.15); overflow:hidden;
+          background:#fff; width:520px; max-width:calc(100% - 24px);
+          margin:10vh auto; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.15); overflow:hidden;
         }
         #editStopModal .dialog-header {
-            padding:14px 16px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;
+          padding:14px 16px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;
         }
         #editStopModal .dialog-body { padding:16px; }
     </style>
@@ -36,6 +36,7 @@
 <div th:replace="~{fragments/header :: siteHeader('trips')}"></div>
 
 <main style="padding:16px 0;">
+
     <!-- BigDecimal 상수 별칭 -->
     <div th:with="BDONE=${T(java.math.BigDecimal).ONE}, BDZERO=${T(java.math.BigDecimal).ZERO}">
 
@@ -74,7 +75,7 @@
                      th:with="plain=${totalCost != null and totalCost.remainder(BDONE).compareTo(BDZERO)==0}">
                     총 비용:
                     <b th:text="${plain} ? ${#numbers.formatDecimal(totalCost,0,'COMMA',0,'POINT')}
-                             : ${#numbers.formatDecimal(totalCost,0,'COMMA',2,'POINT')}"></b> 원
+                               : ${#numbers.formatDecimal(totalCost,0,'COMMA',2,'POINT')}"></b> 원
                 </div>
 
                 <table>
@@ -84,6 +85,7 @@
                         <th>장소명</th>
                         <th>주소</th>
                         <th>메모</th>
+                        <th style="width:100px;">분류</th>
                         <th style="width:120px;">비용</th>
                         <!-- 소유자일 때만 액션 컬럼 헤더 자체 렌더 -->
                         <th style="width:180px;" th:if="${isOwner}">액션</th>
@@ -98,19 +100,22 @@
                                  th:if="${dayCost[s.dayOrder]} != null"
                                  th:with="dc=${dayCost[s.dayOrder]}, plain=${dc.remainder(BDONE).compareTo(BDZERO)==0}"
                                  th:text="'(일차 합계 ' +
-                          (${plain} ? ${#numbers.formatDecimal(dc,0,'COMMA',0,'POINT')}
-                                    : ${#numbers.formatDecimal(dc,0,'COMMA',2,'POINT')})
-                          + '원)'"></div>
+                            (${plain} ? ${#numbers.formatDecimal(dc,0,'COMMA',0,'POINT')}
+                                      : ${#numbers.formatDecimal(dc,0,'COMMA',2,'POINT')})
+                            + '원)'"></div>
                         </td>
                         <td th:text="${s.placeName}"></td>
                         <td th:text="${s.address} ?: '-'"></td>
                         <td th:text="${s.memo} ?: '-'"></td>
 
+                        <!-- 카테고리 표시(간단히 enum 이름) -->
+                        <td th:text="${s.category != null ? s.category : 'OTHER'}"></td>
+
                         <!-- 개별 비용: .00이면 소수점 제거 -->
                         <td th:with="c=${s.cost != null ? s.cost : BDZERO},
-                       plain=${c.remainder(BDONE).compareTo(BDZERO)==0}"
+                         plain=${c.remainder(BDONE).compareTo(BDZERO)==0}"
                             th:text="${plain} ? ${#numbers.formatDecimal(c,0,'COMMA',0,'POINT')}
-                                : ${#numbers.formatDecimal(c,0,'COMMA',2,'POINT')}"></td>
+                                  : ${#numbers.formatDecimal(c,0,'COMMA',2,'POINT')}"></td>
 
                         <!-- 소유자일 때만 액션 셀 자체 렌더 -->
                         <td th:if="${isOwner}">
@@ -118,11 +123,11 @@
                                 <!-- 수정 버튼(모달 오픈): 현재 값 data-*로 전달 -->
                                 <button class="btn"
                                         th:attr="data-id=${s.id},
-                                             data-day=${s.dayOrder},
-                                             data-place=${s.placeName},
-                                             data-address=${s.address} ?: '',
-                                             data-memo=${s.memo} ?: '',
-                                             data-cost=${s.cost} ?: 0"
+                                 data-day=${s.dayOrder},
+                                 data-place=${s.placeName},
+                                 data-address=${s.address} ?: '',
+                                 data-memo=${s.memo} ?: '',
+                                 data-cost=${s.cost} ?: 0"
                                         onclick="openEditStop(this)">수정</button>
 
                                 <button class="btn btn-danger" th:attr="data-id=${s.id}" onclick="removeStop(this)">삭제</button>
@@ -131,12 +136,16 @@
                     </tr>
 
                     <tr th:if="${#lists.isEmpty(stops)}">
-                        <!-- isOwner 여부에 따라 colspan 조정 (액션 컬럼 유무) -->
-                        <td th:attr="colspan=${isOwner} ? 6 : 5"
+                        <!-- isOwner 여부에 따라 colspan 조정 (액션 컬럼 유무: 소유자면 7, 아니면 6) -->
+                        <td th:attr="colspan=${isOwner} ? 7 : 6"
                             style="text-align:center;color:#888;">경유지가 없습니다.</td>
                     </tr>
                     </tbody>
                 </table>
+
+                <!-- (선택) 카테고리별 비용 도넛 차트 -->
+                <h3 style="margin-top:16px;">카테고리별 비용</h3>
+                <canvas id="costChart" width="400" height="260"></canvas>
             </div>
 
             <!-- 우측: 경유지 추가 폼 (소유자만) -->
@@ -169,6 +178,16 @@
                                 <input type="number" step="0.01" min="0" th:field="*{cost}" placeholder="예) 12000"/>
                                 <div class="err" th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}"></div>
                             </div>
+
+                            <!-- (선택) 카테고리 입력을 사용한다면 -->
+                            <div>
+                                <label>분류</label>
+                                <select th:field="*{category}">
+                                    <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
+                                </select>
+                                <div class="err" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+                            </div>
+
                             <div>
                                 <button class="btn btn-primary" type="submit">추가</button>
                             </div>
@@ -223,6 +242,9 @@
     </div>
 </div>
 
+<!-- Chart.js for 도넛 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+
 <script th:inline="javascript">
     async function removeStop(btn) {
       const id = btn.getAttribute('data-id');
@@ -236,7 +258,7 @@
       else alert('삭제 실패');
     }
 
-    // ===== 전체 수정 모달 로직 =====
+    // ===== 수정 모달 로직 =====
     const modal = document.getElementById('editStopModal');
     const form  = document.getElementById('editStopForm');
 
@@ -251,11 +273,7 @@
       modal.style.display = 'block';
     }
     function closeEditStop() { modal.style.display = 'none'; }
-
-    // 모달 바깥 클릭 시 닫기
-    modal?.addEventListener('click', (e) => {
-      if (e.target === modal) closeEditStop();
-    });
+    modal?.addEventListener('click', (e) => { if (e.target === modal) closeEditStop(); });
 
     async function saveEditStop(e) {
       e.preventDefault();
@@ -274,7 +292,7 @@
       const tokenValue = /*[[${_csrf?.token}]]*/ '';
       try {
         const res = await fetch(`/trips/stops/${id}`, {
-          method: 'PUT', // 전체 수정
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -296,20 +314,38 @@
       }
     }
 
-    // (참고) 기존 일차만 이동하는 함수가 필요하면 남겨둠
-    async function moveDay(btn, delta) { // 현재 미사용
-      const id = btn.getAttribute('data-id');
-      const tokenValue = /*[[${_csrf?.token}]]*/ '';
-      const newDay = prompt('변경할 일차를 입력하세요(숫자):');
-      if (!newDay) return;
-      const params = new URLSearchParams({ newDay });
-      const res = await fetch(`/trips/stops/${id}/day?` + params, {
-        method: 'PATCH',
-        headers: { 'X-Requested-With': 'XMLHttpRequest', ...(tokenValue ? {'X-CSRF-TOKEN': tokenValue} : {}) }
+    // ===== 카테고리 도넛 차트 =====
+    (function() {
+      const labels = /*[[${catLabels}]]*/ [];
+      const values = /*[[${catValues}]]*/ [];
+
+      const el = document.getElementById('costChart');
+      if (!el) return;
+
+      const ctx = el.getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: labels, datasets: [{ data: values }] },
+        options: {
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const v = context.parsed;
+                  const isInt = Number.isInteger(Number(v));
+                  const formatted = isInt
+                    ? Number(v).toLocaleString()
+                    : Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                  return `${context.label}: ${formatted}원`;
+                }
+              }
+            }
+          },
+          cutout: '60%'
+        }
       });
-      if (res.ok) location.reload();
-      else alert('이동 실패');
-    }
+    })();
 </script>
 
 </body>

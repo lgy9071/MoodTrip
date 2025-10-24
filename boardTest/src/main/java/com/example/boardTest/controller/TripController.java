@@ -1,5 +1,6 @@
 package com.example.boardTest.controller;
 
+import com.example.boardTest.domain.trip.TripCostCategory;
 import com.example.boardTest.dto.TripPlanCreateDTO;
 import com.example.boardTest.dto.TripStopCreateDTO;
 import com.example.boardTest.entity.TripPlan;
@@ -14,13 +15,18 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.util.UriUtils;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URLEncoder;
+
 
 @Controller
 @RequestMapping("/trips")
@@ -48,7 +54,7 @@ public class TripController {
 
         if (loginUser == null) {
             // 로그인 후 다시 돌아올 위치를 next에 담아 전달
-            String next = UriUtils.encode("/trips/new", StandardCharsets.UTF_8);
+            String next = URLEncoder.encode("/trips/new", StandardCharsets.UTF_8);
             ra.addFlashAttribute("msg", "로그인이 필요합니다.");
             return "redirect:/login?next=" + next;
         }
@@ -65,7 +71,6 @@ public class TripController {
                          @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
 
         if (loginUser == null) {
-            // 로그인 필요 처리: 로그인 페이지로 리다이렉트하거나 401 처리
             ra.addFlashAttribute("msg", "로그인이 필요합니다.");
             return "redirect:/login";
         }
@@ -86,7 +91,8 @@ public class TripController {
                     form.getInitialPlaceName(),
                     form.getInitialAddress(),
                     form.getInitialMemo(),
-                    form.getInitialCost() != null ? form.getInitialCost() : BigDecimal.ZERO
+                    form.getInitialCost() != null ? form.getInitialCost() : BigDecimal.ZERO,
+                    TripCostCategory.OTHER // 카테고리 사용 중이면 적절히 치환
             );
             tripService.addStop(plan.getId(), stopDto, loginUser);
         }
@@ -105,18 +111,38 @@ public class TripController {
 
         BigDecimal totalCost = tripService.totalCost(id);
         Map<Integer, BigDecimal> dayCost = tripService.dayCostMap(id);
+        Map<TripCostCategory, BigDecimal> catCost = tripService.categoryCostMap(id);
 
-        boolean isOwner = false;
-        if (loginUser != null && plan.getOwner() != null) {
-            isOwner = loginUser.getId().equals(plan.getOwner().getId());
+        boolean isOwner = (loginUser != null && plan.getOwner() != null &&
+                loginUser.getId().equals(plan.getOwner().getId()));
+
+        // 차트용 라벨/값 배열 (enum 순서대로)
+        List<String> catLabels = new ArrayList<>();
+        List<BigDecimal> catValues = new ArrayList<>();
+        for (TripCostCategory c : TripCostCategory.values()) {
+            catLabels.add(switch (c) {
+                case TRANSPORT -> "교통";
+                case LODGING -> "숙박";
+                case FOOD -> "식사";
+                case SIGHTSEEING -> "관광";
+                case SHOPPING -> "쇼핑";
+                default -> "기타";
+            });
+            catValues.add(catCost.getOrDefault(c, BigDecimal.ZERO));
         }
 
         model.addAttribute("plan", plan);
         model.addAttribute("stops", stops);
-        model.addAttribute("stopForm", new TripStopCreateDTO(1,"","","", BigDecimal.ZERO));
+        model.addAttribute("stopForm",
+                           new TripStopCreateDTO(1, "", "", "", BigDecimal.ZERO, TripCostCategory.OTHER));
         model.addAttribute("totalCost", totalCost);
         model.addAttribute("dayCost", dayCost);
         model.addAttribute("isOwner", isOwner);
+
+        // 카테고리 셀렉트 옵션 & 차트 데이터
+        model.addAttribute("categories", TripCostCategory.values());
+        model.addAttribute("catLabels", catLabels);
+        model.addAttribute("catValues", catValues);
 
         return "trips/detail";
     }
@@ -165,7 +191,7 @@ public class TripController {
     @ResponseBody
     public void deleteStop(@PathVariable("stopId") Long stopId,
                            @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
-        // 필요 시 소유자 검증을 서비스로 위임(현재 removeStop은 권한검사 없이 삭제)
+        // 필요시 서비스에서 소유자 검증
         tripService.removeStop(stopId);
     }
 
@@ -176,4 +202,9 @@ public class TripController {
                         @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
         tripService.moveDay(stopId, newDay);
     }
+
+    // (선택) detail.html에서 사용하는 PUT /trips/stops/{id} 전체 수정 모달을 지원하려면 추가 필요
+    // @PutMapping("/stops/{stopId}")
+    // @ResponseBody
+    // public void updateStop(...)
 }

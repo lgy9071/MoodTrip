@@ -1,5 +1,6 @@
 package com.example.boardTest.service;
 
+import com.example.boardTest.domain.trip.TripCostCategory;
 import com.example.boardTest.dto.TripStopCreateDTO;
 import com.example.boardTest.entity.TripPlan;
 import com.example.boardTest.entity.TripStop;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +77,7 @@ public class TripService {
                 .address(dto.address())
                 .memo(dto.memo())
                 .cost(dto.cost())
+                .category(dto.category())
                 .build();
         return stopRepo.save(stop);
     }
@@ -102,6 +105,17 @@ public class TripService {
             Number n = (Number) row[0];
             BigDecimal sum = (row[1] != null) ? (BigDecimal) row[1] : BigDecimal.ZERO;
             map.put(n.intValue(), sum);
+        }
+        return map;
+    }
+
+    // 카테고리 합계 맵 (EnumMap 사용)
+    public Map<TripCostCategory, BigDecimal> categoryCostMap(Long planId) {
+        Map<TripCostCategory, BigDecimal> map = new EnumMap<>(TripCostCategory.class);
+        for (Object[] row : stopRepo.sumCostByCategory(planId)) {
+            TripCostCategory cat = (TripCostCategory) row[0];
+            BigDecimal sum = (row[1] != null) ? (BigDecimal) row[1] : BigDecimal.ZERO;
+            map.put(cat, sum);
         }
         return map;
     }
