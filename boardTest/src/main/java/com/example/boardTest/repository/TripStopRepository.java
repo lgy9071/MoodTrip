@@ -17,4 +17,8 @@ public interface TripStopRepository extends JpaRepository<TripStop, Long> {
 
     @Query("select s.dayOrder, coalesce(sum(s.cost),0) from TripStop s where s.trip.id=:tripId group by s.dayOrder order by s.dayOrder")
     List<Object[]> sumCostByDay(@Param("tripId") Long tripId);
+
+    // 카테고리 집계
+    @Query("select s.category, coalesce(sum(s.cost),0) from TripStop s where s.trip.id=:tripId group by s.category")
+    List<Object[]> sumCostByCategory(@Param("tripId") Long tripId);
 }

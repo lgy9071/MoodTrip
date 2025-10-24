@@ -1,10 +1,13 @@
 package com.example.boardTest.entity;
 
+import com.example.boardTest.domain.trip.TripCostCategory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 import java.math.BigDecimal;
 
@@ -37,4 +40,9 @@ public class TripStop {
 
     @Column(precision = 12, scale = 2) // 9,999,999,999.99까지
     private BigDecimal cost;           // 해당 경유지 비용(원화 기준 등)
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    @Builder.Default
+    private TripCostCategory category = TripCostCategory.OTHER;
 }
