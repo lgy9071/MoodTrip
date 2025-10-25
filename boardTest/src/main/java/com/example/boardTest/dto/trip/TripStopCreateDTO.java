@@ -1,4 +1,4 @@
-package com.example.boardTest.dto;
+package com.example.boardTest.dto.trip;
 
 import com.example.boardTest.domain.trip.TripCostCategory;
 import jakarta.validation.constraints.Digits;

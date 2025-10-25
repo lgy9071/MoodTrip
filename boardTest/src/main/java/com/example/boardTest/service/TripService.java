@@ -1,7 +1,7 @@
 package com.example.boardTest.service;
 
 import com.example.boardTest.domain.trip.TripCostCategory;
-import com.example.boardTest.dto.TripStopCreateDTO;
+import com.example.boardTest.dto.trip.TripStopCreateDTO;
 import com.example.boardTest.entity.TripPlan;
 import com.example.boardTest.entity.TripStop;
 import com.example.boardTest.entity.User;

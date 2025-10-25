@@ -143,9 +143,9 @@
                     </tbody>
                 </table>
 
-                <!-- (선택) 카테고리별 비용 도넛 차트 -->
+                <!-- 카테고리별 비용 도넛 차트 -->
                 <h3 style="margin-top:16px;">카테고리별 비용</h3>
-                <canvas id="costChart" width="400" height="260"></canvas>
+                <canvas id="costChart" width="260" height="180" style="max-width:360px; max-height:240px;"></canvas>
             </div>
 
             <!-- 우측: 경유지 추가 폼 (소유자만) -->
@@ -179,7 +179,7 @@
                                 <div class="err" th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}"></div>
                             </div>
 
-                            <!-- (선택) 카테고리 입력을 사용한다면 -->
+                            <!-- 카테고리 입력 -->
                             <div>
                                 <label>분류</label>
                                 <select th:field="*{category}">
@@ -316,36 +316,96 @@
 
     // ===== 카테고리 도넛 차트 =====
     (function() {
-      const labels = /*[[${catLabels}]]*/ [];
-      const values = /*[[${catValues}]]*/ [];
+    // 데이터
+    const labels = /*[[${catLabels}]]*/ [];
+    const rawValues = /*[[${catValues}]]*/ [];
+    const values = Array.isArray(rawValues) ? rawValues.map(v => Number(v) || 0) : [];
 
-      const el = document.getElementById('costChart');
-      if (!el) return;
+    // 캔버스 크기(작게)
+    const el = document.getElementById('costChart');
+    if (!el) return;
+    el.width  = 320;
+    el.height = 220;
 
-      const ctx = el.getContext('2d');
-      new Chart(ctx, {
-        type: 'doughnut',
-        data: { labels: labels, datasets: [{ data: values }] },
-        options: {
-          plugins: {
-            legend: { position: 'bottom' },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const v = context.parsed;
-                  const isInt = Number.isInteger(Number(v));
-                  const formatted = isInt
-                    ? Number(v).toLocaleString()
-                    : Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                  return `${context.label}: ${formatted}원`;
-                }
+    // 모든 값이 0이면 안내 표시
+    const total = values.reduce((a,b)=>a+b, 0);
+    if (total === 0) {
+      const msg = document.createElement('div');
+      msg.className = 'muted';
+      msg.style.marginTop = '8px';
+      msg.textContent = '카테고리별 비용 데이터가 없습니다.';
+      el.replaceWith(msg);
+      return;
+    }
+
+    const colors = [
+      '#4C6EF5', // 교통
+      '#20C997', // 숙박
+      '#FD7E14', // 식사
+      '#845EF7', // 관광
+      '#E64980', // 쇼핑
+      '#868E96'  // 기타
+    ];
+
+    const ringShadow = {
+      id: 'ringShadow',
+      afterDatasetsDraw(chart, args, pluginOptions) {
+        const {ctx, chartArea: {top, bottom, left, right}} = chart;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.18)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetY = 6;
+        ctx.shadowOffsetX = 0;
+        // 링 외곽선 살짝 그려서 깊이감
+        ctx.beginPath();
+        const x = (left + right)/2;
+        const y = (top + bottom)/2;
+        const outerR = Math.min(right-left, bottom-top)/2 * 0.95;
+        ctx.arc(x, y, outerR, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
+
+    const ctx = el.getContext('2d');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: colors.slice(0, labels.length),
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        layout: { padding: 4 },
+        cutout: '68%',
+        radius: '80%',
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle' } },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const v = Number(context.parsed) || 0;
+                const isInt = Number.isInteger(v);
+                const formatted = isInt
+                  ? v.toLocaleString()
+                  : v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                return `${context.label}: ${formatted}원`;
               }
             }
-          },
-          cutout: '60%'
-        }
-      });
-    })();
+          }
+        },
+        animation: { animateRotate: true, duration: 600 }
+      },
+      plugins: [ringShadow] // 그림자 플러그인 적용
+    });
+  })();
 </script>
 
 </body>
