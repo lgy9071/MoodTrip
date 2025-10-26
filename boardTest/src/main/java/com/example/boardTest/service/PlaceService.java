@@ -35,16 +35,20 @@ public class PlaceService {
     }
 
     public Place update(Long id, String name, String address, String category, Integer rating, String imageUrl, String memo, User editor) {
+        if (editor == null) throw new IllegalStateException("로그인이 필요합니다.");
         Place p = find(id);
-        if (!p.getAuthor().getId().equals(editor.getId())) throw new IllegalStateException("작성자만 수정할 수 있습니다.");
+        if (p.getAuthor() == null || !p.getAuthor().getId().equals(editor.getId()))
+            throw new IllegalStateException("작성자만 수정할 수 있습니다.");
         p.setName(name); p.setAddress(address); p.setCategory(category);
         p.setRating(rating); p.setImageUrl(imageUrl); p.setMemo(memo);
         return repo.save(p);
     }
 
     public void delete(Long id, User requester) {
+        if (requester == null) throw new IllegalStateException("로그인이 필요합니다.");
         Place p = find(id);
-        if (!p.getAuthor().getId().equals(requester.getId())) throw new IllegalStateException("작성자만 삭제할 수 있습니다.");
+        if (p.getAuthor() == null || !p.getAuthor().getId().equals(requester.getId()))
+            throw new IllegalStateException("작성자만 삭제할 수 있습니다.");
         repo.delete(p);
     }
 }

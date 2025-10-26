@@ -26,8 +26,8 @@
             <img th:src="${place.imageUrl}" alt="">
         </div>
         <div class="meta">
-            <p><strong>카테고리:</strong> <span th:text="${place.category} ?: '-'"></span></p>
-            <p><strong>주소:</strong> <span th:text="${place.address} ?: '-'"></span></p>
+            <p><strong>카테고리:</strong> <span th:text="${place.category != null ? place.category : '-'}"></span></p>
+            <p><strong>주소:</strong> <span th:text="${place.address != null ? place.address : '-'}"></span></p>
             <p>
                 <strong>평점:</strong>
                 <span th:if="${place.rating != null}">
@@ -40,25 +40,27 @@
                 <span th:text="${#temporals.format(place.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
             </p>
             <p><strong>메모:</strong></p>
-            <pre th:text="${place.memo} ?: '-'" style="white-space:pre-wrap"></pre>
+            <pre th:text="${place.memo != null ? place.memo : '-'}" style="white-space:pre-wrap"></pre>
 
             <div class="actions" style="margin-top:16px">
                 <a href="/places" class="button-link">목록</a>
 
                 <!-- 삭제 -->
                 <div th:if="${session.LOGIN_USER != null
-             and #ids.eq(session.LOGIN_USER.id, place.author?.id)}">
-                <form th:action="@{|/places/${place.id}/delete|}" method="post"
-                      onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                    <button type="submit" class="button-link danger">삭제</button>
-                </form>
+            and place.author != null
+            and session.LOGIN_USER.id == place.author.id}">
+                    <form th:action="@{|/places/${place.id}/delete|}" method="post"
+                          onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                        <button type="submit" class="button-link danger">삭제</button>
+                    </form>
                 </div>
             </div>
         </div>
     </section>
 
     <div th:if="${session.LOGIN_USER != null
-             and #ids.eq(session.LOGIN_USER.id, place.author?.id)}">
+            and place.author != null
+            and session.LOGIN_USER.id == place.author.id}">
     <!-- 오른쪽: 수정 폼 -->
     <section>
         <h2>정보 수정</h2>
