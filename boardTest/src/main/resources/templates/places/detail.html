@@ -22,6 +22,16 @@
     <!-- 왼쪽: 정보 보기 -->
     <section class="place-card">
         <h1 th:text="${place.name}">가게명</h1>
+        <div style="display:flex;gap:8px;align-items:center;margin:8px 0">
+            <form th:if="${session.LOGIN_USER != null}"
+                  th:action="@{|/places/${place.id}/favorite|}" method="post" style="display:inline">
+                <button type="submit" class="button-link"
+                        th:style="${isFav} ? 'background:#ff4d4f;color:#fff' : ''">
+                    <span th:text="${isFav} ? '♥ 즐겨찾기 해제' : '♡ 즐겨찾기'"></span>
+                </button>
+            </form>
+            <span th:text="'즐겨찾기 ' + ${favCount} + '명'"></span>
+        </div>
         <div th:if="${place.imageUrl}">
             <img th:src="${place.imageUrl}" alt="">
         </div>

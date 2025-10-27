@@ -1,7 +1,9 @@
 package com.example.boardTest.service;
 
 import com.example.boardTest.entity.Place;
+import com.example.boardTest.entity.PlaceFavorite;
 import com.example.boardTest.entity.User;
+import com.example.boardTest.repository.PlaceFavoriteRepository;
 import com.example.boardTest.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -10,14 +12,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class PlaceService {
     private final PlaceRepository repo;
+    private final PlaceFavoriteRepository favRepo;
 
-    public Page<Place> list(String keyword, int page, int size) {
+    public Page<Place> list(String keyword, int page, int size, Long favoritesOfUserId) {
         page = Math.max(0, page);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        if (favoritesOfUserId != null) {
+            // 즐겨찾기만
+            return favRepo.findFavoritesByUserId(favoritesOfUserId, pageable);
+        }
         if (keyword == null || keyword.isBlank()) return repo.findAll(pageable);
         return repo.findByCategoryContainingIgnoreCaseOrNameContainingIgnoreCase(keyword, keyword, pageable);
     }
@@ -50,5 +59,28 @@ public class PlaceService {
         if (p.getAuthor() == null || !p.getAuthor().getId().equals(requester.getId()))
             throw new IllegalStateException("작성자만 삭제할 수 있습니다.");
         repo.delete(p);
+    }
+
+    // 즐겨찾기 기능
+    public boolean toggleFavorite(Long placeId, User user) {
+        if (user == null) throw new IllegalStateException("로그인이 필요합니다.");
+        Place place = find(placeId);
+        Optional<PlaceFavorite> existing = favRepo.findByUserIdAndPlaceId(user.getId(), placeId);
+        if (existing.isPresent()) {
+            favRepo.delete(existing.get());
+            return false; // un-favorited
+        } else {
+            favRepo.save(PlaceFavorite.builder().user(user).place(place).build());
+            return true; // favorited
+        }
+    }
+
+    public boolean isFavorited(Long placeId, Long userId) {
+        if (userId == null) return false;
+        return favRepo.findByUserIdAndPlaceId(userId, placeId).isPresent();
+    }
+
+    public long favoriteCount(Long placeId) {
+        return favRepo.countByPlaceId(placeId);
     }
 }

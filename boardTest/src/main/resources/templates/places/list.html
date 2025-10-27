@@ -11,6 +11,9 @@
 <div class="header">
     <form class="search-bar" method="get" action="/places">
         <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어(카테고리/이름)">
+        <label style="margin-left:8px">
+            <input type="checkbox" name="favoritesOnly" value="true" th:checked="${favoritesOnly}"> 내 즐겨찾기만
+        </label>
         <button type="submit">검색</button>
     </form>
 </div>
@@ -28,6 +31,16 @@
             <p th:if="${p.rating != null}">
                 <span th:each="i : ${#numbers.sequence(1, p.rating)}">⭐</span>
             </p>
+
+            <div th:if="${session.LOGIN_USER != null}">
+                <form th:action="@{|/places/${p.id}/favorite|}" method="post">
+                    <input type="hidden" name="back"
+                           th:value="@{|/places?page=${currentPage}&keyword=${keyword}&favoritesOnly=${favoritesOnly}|}">
+                    <button type="submit" class="button-link" style="padding:4px 8px">
+                        ♥ 즐겨찾기 토글
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
