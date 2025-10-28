@@ -6,10 +6,10 @@
 </head>
 <body>
 <header th:fragment="siteHeader(active)">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
 
         <!-- 좌측: 로고 -->
-        <a href="/" th:text="#{app.title}" style="text-decoration:none;color:#222;font-weight:700;font-size:20px;">MoodTrip</a>
+        <a href="/" th:text="#{app.title}" style="text-decoration:none;color:var(--text);font-weight:700;font-size:20px;">MoodTrip</a>
 
         <!-- 중앙: 네비 -->
         <nav style="display:flex;gap:12px;flex:1;justify-content:center;">
@@ -18,10 +18,9 @@
             <a href="/reviews" th:text="#{nav.reviews}">리뷰</a>
             <a href="/coming-soon" th:text="#{nav.videos}">영상</a>
             <a href="/coming-soon" th:text="#{nav.products}">용품</a>
-<!--            <a th:href="@{/places(favoritesOnly=true)}">내 즐겨찾기</a>-->
         </nav>
 
-        <!-- 우측: 로그인/언어 드롭다운 -->
+        <!-- 우측: 로그인/언어/다크토글 -->
         <div style="display:flex;align-items:center;gap:12px;position:relative;">
 
             <!-- 로그인 상태 -->
@@ -31,7 +30,7 @@
       </span>
             <span th:if="${session.LOGIN_USER != null}">
         <form th:action="@{/logout}" method="post" style="display:inline;">
-          <button type="submit" th:text="#{auth.logout}" style="background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;">로그아웃</button>
+          <button type="submit" th:text="#{auth.logout}" style="background:var(--primary);color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;">로그아웃</button>
         </form>
       </span>
 
@@ -46,92 +45,93 @@
                     <a th:href="@{?lang=uk}" th:classappend="${#locale.language=='uk'} ? 'active'">UK</a>
                 </div>
             </div>
+
+            <!-- 다크모드 토글 -->
+            <button id="themeToggle" aria-label="Toggle dark mode"
+                    style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 8px;cursor:pointer;color:var(--text)">
+                <span id="themeIcon" aria-hidden="true">🌙</span>
+            </button>
         </div>
     </div>
 
     <!-- 로그아웃 안내 -->
     <div th:if="${param.loggedOut}"
-         style="margin-top:8px;background:#f5faff;border:1px solid #d6e9ff;color:#184a8b;padding:8px 10px;border-radius:8px;">
+         style="margin-top:8px;background:rgba(25,118,210,0.06);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;">
         정상적으로 로그아웃되었습니다.
     </div>
 
     <style>
-        header a { color:#333; text-decoration:none; padding:6px 8px; border-radius:6px }
-        header a.active { background:#1976d2; color:#fff }
-        header button { background:#1976d2; color:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer }
+        header a { color: var(--text); text-decoration:none; padding:6px 8px; border-radius:6px }
+        header a.active { background: var(--primary); color:#fff }
+        header button { background: var(--primary); color:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer }
 
         /* 언어 드롭다운 */
-        .lang-dropdown {
-          position:relative;
-          display:inline-block; /* hover 범위 안정화 */
-        }
+        .lang-dropdown { position:relative; display:inline-block; }
         .lang-toggle {
           background:transparent;
-          border:1px solid #ddd;
+          border:1px solid var(--border);
           border-radius:6px;
           padding:4px 8px;
           font-size:12px;
           cursor:pointer;
-          color:#444;
-          line-height:1;           /* 라인박스 여백 최소화 */
+          color: var(--text);
+          line-height:1;
         }
-        .lang-toggle:hover { background:#f8f9fa; }
-
+        .lang-toggle:hover { background: rgba(127,127,127,.08); }
         .lang-menu {
-          position:absolute;
-          right:0;
-          top:100%;                /* 버튼 바로 아래에 ‘밀착’ */
-          margin-top:0;            /* 간격 제거 */
-          background:#fff;
-          border:1px solid #ddd;
-          border-radius:6px;
-          box-shadow:0 4px 10px rgba(0,0,0,.08);
-          z-index:10;
-          min-width:70px;
-
-          /* 초기엔 숨김 + 슬라이드다운 애니메이션 준비 */
-          display:block;           /* 트랜지션 위해 block 유지 */
-          opacity:0;
-          visibility:hidden;
-          transform:translateY(-6px) scaleY(.98);
-          transform-origin:top;
-          transition:
-            opacity .18s ease,
-            transform .18s ease,
-            visibility 0s linear .18s; /* 닫힐 때만 지연 */
+          position:absolute; right:0; top:100%; margin-top:0;
+          background: var(--card); border:1px solid var(--border); border-radius:6px;
+          box-shadow: var(--elev-1); z-index:10; min-width:70px;
+          display:block; opacity:0; visibility:hidden;
+          transform:translateY(-6px) scaleY(.98); transform-origin:top;
+          transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
         }
         .lang-menu a {
-          display:block;
-          padding:6px 10px;
-          font-size:12px;
-          color:#333;
-          text-decoration:none;
-          white-space:nowrap;
+          display:block; padding:6px 10px; font-size:12px; color: var(--text); text-decoration:none; white-space:nowrap;
         }
-        .lang-menu a:hover { background:#f1f5f9; }
-        .lang-menu a.active { background:#1976d2; color:#fff; }
-
-        /* hover 또는 키보드 포커스로 열기 */
+        .lang-menu a:hover { background: rgba(127,127,127,.08); }
+        .lang-menu a.active { background: var(--primary); color:#fff; }
         .lang-dropdown:hover .lang-menu,
         .lang-dropdown:focus-within .lang-menu {
-          opacity:1;
-          visibility:visible;
-          transform:translateY(0) scaleY(1);
-          transition:
-            opacity .18s ease,
-            transform .18s ease,
-            visibility 0s; /* 열릴 때 즉시 보이기 */
+          opacity:1; visibility:visible; transform:translateY(0) scaleY(1);
+          transition: opacity .18s ease, transform .18s ease, visibility 0s;
         }
-
-        /* 혹시 모를 1~2px 끊김 방지용(투명 히트존) - 필요 없으면 제거해도 됨 */
         .lang-dropdown::after {
-          content:"";
-          position:absolute;
-          left:0; right:0;
-          top:100%;
-          height:2px;              /* 시각적 공간은 0, hover만 이어줌 */
+          content:""; position:absolute; left:0; right:0; top:100%; height:2px;
         }
     </style>
+
+    <script>
+        (function () {
+          const STORAGE_KEY = 'theme'; // 'light' | 'dark'
+          const root = document.documentElement;
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved === 'light' || saved === 'dark') root.setAttribute('data-theme', saved);
+          else root.removeAttribute('data-theme'); // 시스템 선호 사용
+
+          const icon = document.getElementById('themeIcon');
+          function updateIcon() {
+            const isDark = (root.getAttribute('data-theme') === 'dark')
+              || (!root.hasAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            icon.textContent = isDark ? '☀️' : '🌙';
+          }
+          updateIcon();
+
+          document.getElementById('themeToggle').addEventListener('click', () => {
+            const current = root.getAttribute('data-theme');
+            let next;
+            if (!current) next = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark';
+            else next = current === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', next);
+            localStorage.setItem(STORAGE_KEY, next);
+            updateIcon();
+          });
+
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (!localStorage.getItem(STORAGE_KEY)) updateIcon();
+          });
+        })();
+    </script>
 </header>
 </body>
 </html>

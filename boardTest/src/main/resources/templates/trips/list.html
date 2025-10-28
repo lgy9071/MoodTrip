@@ -4,15 +4,17 @@
     <meta charset="UTF-8"/>
     <title>여행 계획 목록</title>
     <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
+        body { font-family: system-ui, sans-serif; margin: 24px; color: var(--text); background: var(--bg); }
         .top { display:flex; justify-content: space-between; align-items:center; }
-        table { border-collapse: collapse; width: 100%; margin-top: 12px; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 12px; color: var(--text); }
+        th, td { border: 1px solid var(--border); padding: 8px; }
         th { background: #f5f7fa; }
+        html[data-theme="dark"] th { background: #141924; }
         .pagination { margin-top: 12px; display:flex; gap:8px; }
-        .btn { padding: 6px 10px; border:1px solid #ccc; background:#fff; cursor:pointer; text-decoration:none; }
-        .btn-primary { background:#0064ff; color:white; border-color:#0064ff; }
+        .btn { padding: 6px 10px; border:1px solid var(--border); background: var(--card); color: var(--text); cursor:pointer; text-decoration:none; border-radius:6px; }
+        .btn-primary { background: var(--primary); color:#fff; border-color: var(--primary); }
         .msg { background:#ecf9f1; border:1px solid #b7ebc6; padding:8px; margin-top:12px; color:#18794e; }
+        html[data-theme="dark"] .msg { background:#0f2b22; border-color:#1f6148; color:#7dd3ae; }
     </style>
 </head>
 <body>
@@ -22,20 +24,15 @@
     <div class="top">
         <h1>여행 계획</h1>
 
-        <!-- 비로그인일 때: 모달 띄운 뒤 이동 -->
-        <a class="btn btn-primary"
-           th:if="${session.LOGIN_USER == null}"
-           href="#"
-           onclick="openLoginModal(event)">+ 새 계획</a>
-
-        <!-- 로그인 상태일 때: 그대로 새 계획으로 -->
-        <a class="btn btn-primary"
-           th:if="${session.LOGIN_USER != null}"
-           th:href="@{/trips/new}">+ 새 계획</a>
+        <a class="btn btn-primary" th:if="${session.LOGIN_USER == null}" href="#" onclick="openLoginModal(event)">+ 새 계획</a>
+        <a class="btn btn-primary" th:if="${session.LOGIN_USER != null}" th:href="@{/trips/new}">+ 새 계획</a>
     </div>
 
     <div th:if="${msg}" class="msg" th:text="${msg}"></div>
     <div th:if="${error}" class="msg" style="background:#ffecec;border-color:#ffb4b4;color:#a40000" th:text="${error}"></div>
+    <style>
+        html[data-theme="dark"] .msg[th\\:if='${error}'] { background:#2a1515 !important; border-color:#6b2a2a !important; color:#ffb4b4 !important; }
+    </style>
 
     <table>
         <thead>
@@ -49,21 +46,14 @@
         </thead>
         <tbody>
         <tr th:each="p, i : ${plans.content}">
-            <!-- 번호: 페이지 내 1,2,3… 이면 i.count / 전체 역순이면 아래 주석-->
             <td th:text="${i.count}"></td>
-            <!-- 전체 역순 : th:text="${plans.totalElements - (plans.number * plans.size) - i.index}" -->
-
             <td><a th:href="@{|/trips/${p.id}|}" th:text="${p.title}"></a></td>
             <td th:text="${p.startDate} + ' ~ ' + ${p.endDate}"></td>
-
-            <!-- 작성자 출력 -->
             <td th:text="${p.owner != null && p.owner.name != null ? p.owner.name : (p.owner != null ? p.owner.username : '-')}"></td>
-
-            <!-- createdAt null-safe -->
             <td th:text="${p.createdAt != null ? #temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
         </tr>
         <tr th:if="${plans.content.size()==0}">
-            <td colspan="5" style="text-align:center;color:#888;">등록된 여행 계획이 없습니다.</td>
+            <td colspan="5" style="text-align:center;color:var(--muted);">등록된 여행 계획이 없습니다.</td>
         </tr>
         </tbody>
     </table>
@@ -77,35 +67,19 @@
 
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
 
-<!-- SweetAlert2 (CDN) -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     function openLoginModal(e) {
       e.preventDefault();
-
-      // Swal이 안 뜨는 환경 대비: 기본 confirm으로 폴백
       if (typeof Swal === 'undefined') {
-        if (confirm('로그인이 필요합니다.\n로그인하시겠습니까?')) {
-          window.location.href = '/login?next=/trips/new';
-        }
+        if (confirm('로그인이 필요합니다.\n로그인하시겠습니까?')) window.location.href = '/login?next=/trips/new';
         return;
       }
-
       Swal.fire({
-        title: '로그인이 필요합니다',
-        text: '로그인하시겠습니까?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: '로그인하기',
-        cancelButtonText: '취소',
-        reverseButtons: true,
-        focusConfirm: false
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = '/login?next=/trips/new';
-        }
-      });
+        title: '로그인이 필요합니다', text: '로그인하시겠습니까?', icon: 'question',
+        showCancelButton: true, confirmButtonText: '로그인하기', cancelButtonText: '취소',
+        reverseButtons: true, focusConfirm: false
+      }).then((r)=>{ if (r.isConfirmed) window.location.href='/login?next=/trips/new'; });
     }
 </script>
 </body>

@@ -4,31 +4,30 @@
     <meta charset="UTF-8"/>
     <title>여행 계획 등록</title>
     <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
+        body { font-family: system-ui, sans-serif; margin: 24px; color: var(--text); background: var(--bg); }
         .section { margin-bottom: 20px; }
         form { max-width: 920px; display: grid; gap: 16px; }
         label { font-weight: 600; }
         input[type=text], input[type=date], input[type=number], textarea, select {
-          width: 100%; padding: 8px; border:1px solid #ddd; border-radius: 6px;
+          width: 100%; padding: 8px; border:1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--text);
         }
-        .btn { padding: 8px 12px; border: 1px solid #ccc; background:#fff; border-radius:6px; cursor:pointer; }
-        .btn-primary { background:#0064ff; color:white; border-color:#0064ff; }
-        .btn-danger { background:#e74c3c; color:white; border-color:#e74c3c; }
-        .err { color:#c22727; font-size: 0.9em; }
+        .btn { padding: 8px 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); border-radius:6px; cursor:pointer; text-decoration:none; }
+        .btn-primary { background: var(--primary); color:white; border-color: var(--primary); }
+        .btn-danger  { background: var(--danger, #e74c3c); color:white; border-color: var(--danger, #e74c3c); }
+        .err { color: var(--danger, #c22727); font-size: 0.9em; }
         .grid { display:grid; gap:12px; }
         .stops-header { display:flex; justify-content:space-between; align-items:center; }
         .stop-row { display:grid; grid-template-columns: 80px 1fr 140px 1fr 1fr 140px 96px; gap:8px; align-items:end; }
         .stop-row .actions { display:flex; gap:6px; }
-        .muted { color:#666; font-size: 0.9em; }
+        .muted { color: var(--muted); font-size: 0.9em; }
     </style>
 </head>
 <body>
-<h1>여행 계획 등록</h1>
+<h1 style="color:var(--text);">여행 계획 등록</h1>
 
 <form th:action="@{/trips}" method="post" th:object="${form}">
     <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
 
-    <!-- 기본 정보 -->
     <div class="section grid" style="grid-template-columns: 1fr 1fr 1fr;">
         <div>
             <label>제목</label>
@@ -47,7 +46,6 @@
         </div>
     </div>
 
-    <!-- 경유지들 -->
     <div class="section">
         <div class="stops-header">
             <h2>초기 경유지</h2>
@@ -57,20 +55,11 @@
             </div>
         </div>
 
-        <!-- 헤더 라벨 -->
         <div class="stop-row" style="font-weight:600;">
-            <div>일차</div>
-            <div>장소명</div>
-            <div>비용(원)</div>
-            <div>주소(선택)</div>
-            <div>메모</div>
-            <div>분류</div>
-            <div>액션</div>
+            <div>일차</div><div>장소명</div><div>비용(원)</div><div>주소(선택)</div><div>메모</div><div>분류</div><div>액션</div>
         </div>
 
-        <!-- 실제 행들 -->
         <div id="stops-container">
-            <!-- 서버 사이드 렌더된 기존 행들 -->
             <div class="stop-row" th:each="s, iStat : *{stops}">
                 <input type="number" min="1" th:field="*{stops[__${iStat.index}__].dayOrder}" />
                 <input type="text" th:field="*{stops[__${iStat.index}__].placeName}" placeholder="예) 도톤보리"/>
@@ -86,7 +75,6 @@
             </div>
         </div>
 
-        <!-- 템플릿 행 (JS로 복제) -->
         <template id="stop-template">
             <div class="stop-row">
                 <input type="number" min="1" name="stops[__idx__].dayOrder" value="1"/>
@@ -95,7 +83,6 @@
                 <input type="text" name="stops[__idx__].address" placeholder="예) 오사카부 오사카시…"/>
                 <input type="text" name="stops[__idx__].memo" placeholder="추천 메뉴 등"/>
                 <select name="stops[__idx__].category">
-                    <!-- 카테고리 옵션은 서버에서 주입 -->
                     <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
                 </select>
                 <div class="actions">
@@ -113,22 +100,14 @@
 
 <script th:inline="javascript">
     let stopIndex = /*[[${form.stops != null ? form.stops.size() : 0}]]*/ 0;
-
     function addStop() {
       const tpl = document.getElementById('stop-template');
       const node = tpl.content.firstElementChild.cloneNode(true);
-      // 인덱스 치환
-      node.querySelectorAll('input, select, textarea').forEach(el => {
-        el.name = el.name.replace('__idx__', String(stopIndex));
-      });
-      document.getElementById('stops-container').appendChild(node);
-      stopIndex++;
+      node.querySelectorAll('input, select, textarea').forEach(el => { el.name = el.name.replace('__idx__', String(stopIndex)); });
+      document.getElementById('stops-container').appendChild(node); stopIndex++;
     }
-
     function removeStop(btn) {
-      const row = btn.closest('.stop-row');
-      row.parentNode.removeChild(row);
-      // 인덱스 재정렬은 굳이 필요 없음(서버는 placeName 비어있으면 스킵)
+      const row = btn.closest('.stop-row'); row.parentNode.removeChild(row);
     }
 </script>
 </body>
