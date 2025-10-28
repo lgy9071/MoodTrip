@@ -60,8 +60,12 @@
             and place.author != null
             and session.LOGIN_USER.id == place.author.id}">
                     <form th:action="@{|/places/${place.id}/delete|}" method="post"
-                          onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                        <button type="submit" class="button-link danger">삭제</button>
+                          th:if="${isOwner}">
+                        <button type="submit" class="button-link danger"
+                                th:disabled="${favCount > 0}"
+                                th:title="${favCount > 0} ? '즐겨찾기 ' + ${favCount} + '명이 있어 삭제할 수 없습니다.' : ''">
+                            삭제
+                        </button>
                     </form>
                 </div>
             </div>

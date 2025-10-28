@@ -12,7 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +59,11 @@ public class PlaceService {
         Place p = find(id);
         if (p.getAuthor() == null || !p.getAuthor().getId().equals(requester.getId()))
             throw new IllegalStateException("작성자만 삭제할 수 있습니다.");
+        // 즐겨찾기 되어 있으면 삭제 불가
+        long favs = favRepo.countByPlaceId(id);
+        if (favs > 0) {
+            throw new IllegalStateException("즐겨찾기된 장소는 삭제할 수 없습니다. (즐겨찾기: " + favs + "명)");
+        }
         repo.delete(p);
     }
 
@@ -82,5 +88,21 @@ public class PlaceService {
 
     public long favoriteCount(Long placeId) {
         return favRepo.countByPlaceId(placeId);
+    }
+
+    public Map<Long, Boolean> myFavMap(Collection<Long> placeIds, Long userId) {
+        if (userId == null || placeIds.isEmpty()) return Collections.emptyMap();
+        List<Long> favIds = favRepo.findMyFavoritedPlaceIdsIn(userId, placeIds);
+        return favIds.stream().collect(Collectors.toMap(id -> id, id -> true));
+    }
+
+    public Map<Long, Long> favCountMap(Collection<Long> placeIds) {
+        if (placeIds.isEmpty()) return Collections.emptyMap();
+        List<Object[]> rows = favRepo.countByPlaceIdIn(placeIds);
+        Map<Long, Long> map = new HashMap<>();
+        for (Object[] r : rows) {
+            map.put((Long) r[0], (Long) r[1]);
+        }
+        return map;
     }
 }

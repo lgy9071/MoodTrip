@@ -11,6 +11,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+import java.util.Map;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/places")
@@ -33,11 +36,18 @@ public class PlaceController {
                     + (keyword != null ? "&keyword=" + keyword : "")
                     + (favoritesOnly ? "&favoritesOnly=true" : "");
 
+        // 목록 즐겨찾기 상태/개수 맵
+        List<Long> ids = pg.getContent().stream().map(Place::getId).toList();
+        Map<Long, Boolean> myFavMap = service.myFavMap(ids, me != null ? me.getId() : null);
+        Map<Long, Long> favCountMap = service.favCountMap(ids);
+
         model.addAttribute("page", pg);
         model.addAttribute("currentPage", pg.getNumber());
         model.addAttribute("totalPages", total);
         model.addAttribute("keyword", keyword);
         model.addAttribute("favoritesOnly", favoritesOnly);
+        model.addAttribute("myFavMap", myFavMap);
+        model.addAttribute("favCountMap", favCountMap);
         return "places/list";
     }
 
@@ -45,7 +55,7 @@ public class PlaceController {
     public String form(HttpSession session, RedirectAttributes ra) {
         User user = (User) session.getAttribute("LOGIN_USER");
         if (user == null) {
-            ra.addFlashAttribute("msg", "로그인이 필요합니다.");
+            ra.addFlashAttribute("msg", "로그인 시 사용 가능해요.");
             return "redirect:/login?next=/places/new";
         }
         return "places/form";
@@ -62,7 +72,7 @@ public class PlaceController {
                          RedirectAttributes ra) {
         User user = (User) session.getAttribute("LOGIN_USER");
         if (user == null) {
-            ra.addFlashAttribute("msg", "로그인이 필요합니다.");
+            ra.addFlashAttribute("msg", "로그인 시 사용 가능해요.");
             return "redirect:/login?next=/places/new";
         }
         service.create(name, address, category, rating, imageUrl, memo, user);
@@ -100,10 +110,16 @@ public class PlaceController {
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable("id") Long id, HttpSession session) {
+    public String delete(@PathVariable("id") Long id, HttpSession session, RedirectAttributes ra) {
         User user = (User) session.getAttribute("LOGIN_USER");
-        service.delete(id, user);
-        return "redirect:/places";
+        try {
+            service.delete(id, user);
+            ra.addFlashAttribute("msg", "삭제되었습니다.");
+            return "redirect:/places";
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("msg", e.getMessage());
+            return "redirect:/places/" + id;
+        }
     }
 
     @PostMapping("/{id}/favorite")

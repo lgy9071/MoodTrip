@@ -32,18 +32,23 @@
                 <span th:each="i : ${#numbers.sequence(1, p.rating)}">⭐</span>
             </p>
 
-            <div th:if="${session.LOGIN_USER != null}">
-                <form th:action="@{|/places/${p.id}/favorite|}" method="post">
+            <!-- 즐겨찾기 표시/토글 -->
+            <div style="display:flex;align-items:center;gap:8px">
+                <span th:text="'즐겨찾기 ' + ${favCountMap[p.id]} + '명'">즐겨찾기 0명</span>
+
+                <form th:if="${session.LOGIN_USER != null}"
+                      th:action="@{|/places/${p.id}/favorite|}" method="post" style="display:inline">
                     <input type="hidden" name="back"
-                           th:value="@{|/places?page=${currentPage}&keyword=${keyword}&favoritesOnly=${favoritesOnly}|}">
-                    <button type="submit" class="button-link" style="padding:4px 8px">
-                        ♥ 즐겨찾기 토글
+                           th:value="@{/places(page=${currentPage}, keyword=${keyword},
+                           favoritesOnly=${favoritesOnly} ? true : null)}">
+                    <button type="submit" class="button-link" style="padding:4px 8px"
+                            th:style="${myFavMap.containsKey(p.id)} ? 'background:#ff4d4f;color:#fff' : ''">
+                        <span th:text="${myFavMap.containsKey(p.id)} ? '♥ 해제' : '♡ 추가'"></span>
                     </button>
                 </form>
             </div>
         </div>
     </div>
-</div>
 
 <div class="pagination">
   <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">

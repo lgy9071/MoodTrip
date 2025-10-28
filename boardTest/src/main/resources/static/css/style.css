@@ -125,3 +125,59 @@ button:hover, .button-link:hover {
   background-color: #1976d2;
   color: white;
 }
+
+/* 다크모드 */
+/* 1) 테마 토큰 */
+:root {
+  --bg: #fafafa;
+  --text: #222;
+  --muted: #666;
+  --border: #eee;
+  --card: #fff;
+  --elev-1: 0 2px 6px rgba(0,0,0,0.08);
+  --elev-2: 0 4px 12px rgba(0,0,0,0.12);
+  --primary: #1976d2;
+  --primary-strong: #1565c0;
+
+  /* 브라우저 기본 스크롤/폼 위젯 색상 힌트 */
+  color-scheme: light;
+}
+
+/* 2) 다크 테마 (html[data-theme="dark"] …) */
+html[data-theme="dark"] {
+  --bg: #0f1115;
+  --text: #e6e6e6;
+  --muted: #9aa4b2;
+  --border: #242938;
+  --card: #151922;
+  --elev-1: 0 2px 6px rgba(0,0,0,0.45);
+  --elev-2: 0 6px 16px rgba(0,0,0,0.55);
+  --primary: #63a4ff;
+  --primary-strong: #80b6ff;
+
+  color-scheme: dark;
+}
+
+/* 3) 시스템 설정을 기본값으로 사용 (사용자 저장값이 없을 때 의미) */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    --bg: #0f1115;
+    --text: #e6e6e6;
+    --muted: #9aa4b2;
+    --border: #242938;
+    --card: #151922;
+    --elev-1: 0 2px 6px rgba(0,0,0,0.45);
+    --elev-2: 0 6px 16px rgba(0,0,0,0.55);
+    --primary: #63a4ff;
+    --primary-strong: #80b6ff;
+
+    color-scheme: dark;
+  }
+}
+
+/* 4) 페이지 기본 컬러에 변수 적용 + 부드러운 전환 */
+html, body {
+  background: var(--bg);
+  color: var(--text);
+}
+* { transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
