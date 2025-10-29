@@ -3,17 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${place.name} + ' - 상세'">맛집 상세</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .wrap{max-width:980px;margin:24px auto;padding:16px;display:grid;grid-template-columns:1fr 420px;gap:24px}
-        .place-card img{max-width:100%;height:auto;border-radius:8px}
-        .meta p{margin:.25rem 0;color:#555}
-        .form-row{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;margin-bottom:10px}
-        input,select,textarea{padding:8px;border:1px solid #ddd;border-radius:6px}
-        textarea{min-height:100px}
-        .actions{display:flex;gap:8px;margin-top:12px}
-        .danger{background:#e74c3c;color:#fff}
-    </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader('places')}"></div>

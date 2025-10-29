@@ -3,17 +3,6 @@
 <head>
     <meta charset="UTF-8"/>
     <title>여행 계획 목록</title>
-    <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
-        .top { display:flex; justify-content: space-between; align-items:center; }
-        table { border-collapse: collapse; width: 100%; margin-top: 12px; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background: #f5f7fa; }
-        .pagination { margin-top: 12px; display:flex; gap:8px; }
-        .btn { padding: 6px 10px; border:1px solid #ccc; background:#fff; cursor:pointer; text-decoration:none; }
-        .btn-primary { background:#0064ff; color:white; border-color:#0064ff; }
-        .msg { background:#ecf9f1; border:1px solid #b7ebc6; padding:8px; margin-top:12px; color:#18794e; }
-    </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader('trips')}"></div>

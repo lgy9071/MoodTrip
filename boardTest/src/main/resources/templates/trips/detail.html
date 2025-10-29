@@ -4,22 +4,6 @@
     <meta charset="UTF-8"/>
     <title th:text="${plan.title} + ' - 상세'">여행 상세</title>
     <style>
-        body { font-family: system-ui, sans-serif; margin: 24px; }
-        .header { display:flex; justify-content: space-between; align-items: center; }
-        .muted { color:#666; }
-        .btn { padding: 6px 10px; border:1px solid #ccc; background:#fff; cursor:pointer; text-decoration:none; border-radius:6px; }
-        .btn-danger { background:#e74c3c; color:#fff; border-color:#e74c3c; }
-        .btn-primary { background:#0064ff; color:#fff; border-color:#0064ff; }
-        .wrap { display:grid; grid-template-columns: 1fr 420px; gap: 24px; margin-top:16px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-        th { background: #f5f7fa; }
-        .row-actions { display:flex; gap:8px; }
-        .err { color:#c22727; font-size: 0.9em; }
-        input[type=text], input[type=number], textarea { width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; }
-        textarea { min-height: 80px; }
-        .msg { background:#ecf9f1; border:1px solid #b7ebc6; padding:8px; margin-top:12px; color:#18794e; }
-
         /* 모달 기본 스타일 */
         #editStopModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:9999; }
         #editStopModal .dialog {
