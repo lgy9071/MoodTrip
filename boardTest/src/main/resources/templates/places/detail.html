@@ -3,108 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${place.name} + ' - 상세'">맛집 상세</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}" />
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader('places')}"></div>
 
 <main class="wrap">
-    <!-- 왼쪽: 정보 보기 -->
-    <section class="place-card">
+    <section class="card" style="padding:16px;">
         <h1 th:text="${place.name}">가게명</h1>
-        <div style="display:flex;gap:8px;align-items:center;margin:8px 0">
-            <form th:if="${session.LOGIN_USER != null}"
-                  th:action="@{|/places/${place.id}/favorite|}" method="post" style="display:inline">
-                <button type="submit" class="button-link"
-                        th:style="${isFav} ? 'background:#ff4d4f;color:#fff' : ''">
-                    <span th:text="${isFav} ? '♥ 즐겨찾기 해제' : '♡ 즐겨찾기'"></span>
-                </button>
-            </form>
-            <span th:text="'즐겨찾기 ' + ${favCount} + '명'"></span>
-        </div>
-        <div th:if="${place.imageUrl}">
-            <img th:src="${place.imageUrl}" alt="">
-        </div>
-        <div class="meta">
-            <p><strong>카테고리:</strong> <span th:text="${place.category != null ? place.category : '-'}"></span></p>
-            <p><strong>주소:</strong> <span th:text="${place.address != null ? place.address : '-'}"></span></p>
-            <p>
-                <strong>평점:</strong>
-                <span th:if="${place.rating != null}">
-          <span th:each="i : ${#numbers.sequence(1, place.rating)}">⭐</span>
-          <span th:text="' (' + ${place.rating} + '/5)'"></span>
-        </span>
-                <span th:if="${place.rating == null}">-</span>
-            </p>
-            <p><strong>등록일:</strong>
-                <span th:text="${#temporals.format(place.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
-            </p>
-            <p><strong>메모:</strong></p>
-            <pre th:text="${place.memo != null ? place.memo : '-'}" style="white-space:pre-wrap"></pre>
 
-            <div class="actions" style="margin-top:16px">
-                <a href="/places" class="button-link">목록</a>
+        <div class="top">
+            <div>
+                <div class="grid">
+                    <div th:if="${place.imageUrl}">
+                        <img th:src="${place.imageUrl}" alt="">
+                    </div>
+                    <div class="muted">
+                        <p><strong>카테고리:</strong> <span th:text="${place.category != null ? place.category : '-'}"></span></p>
+                        <p><strong>주소:</strong> <span th:text="${place.address != null ? place.address : '-'}"></span></p>
+                        <p>
+                            <strong>평점:</strong>
+                            <span th:if="${place.rating != null}">
+                <span th:each="i : ${#numbers.sequence(1, place.rating)}">⭐</span>
+                <span th:text="' (' + ${place.rating} + '/5)'"></span>
+              </span>
+                            <span th:if="${place.rating == null}">-</span>
+                        </p>
+                        <p><strong>등록일:</strong> <span th:text="${#temporals.format(place.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+                    </div>
+                </div>
+            </div>
 
-                <!-- 삭제 -->
-                <div th:if="${session.LOGIN_USER != null
-            and place.author != null
-            and session.LOGIN_USER.id == place.author.id}">
-                    <form th:action="@{|/places/${place.id}/delete|}" method="post"
-                          onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                        <button type="submit" class="button-link danger">삭제</button>
+            <div>
+                <div class="grid" style="gap:8px;">
+                    <form th:if="${session.LOGIN_USER != null}" th:action="@{|/places/${place.id}/favorite|}" method="post">
+                        <button type="submit" class="btn" th:classappend="${isFav} ? ' btn-danger'">
+                            <span th:text="${isFav} ? '♥ 즐겨찾기 해제' : '♡ 즐겨찾기'"></span>
+                        </button>
                     </form>
+                    <span class="muted" th:text="'즐겨찾기 ' + ${favCount} + '명'"></span>
                 </div>
             </div>
         </div>
+
+        <div class="section">
+            <p><strong>메모</strong></p>
+            <pre th:text="${place.memo != null ? place.memo : '-'}" style="white-space:pre-wrap"></pre>
+        </div>
+
+        <div class="top">
+            <a href="/places" class="btn">목록</a>
+
+            <div th:if="${session.LOGIN_USER != null and place.author != null and session.LOGIN_USER.id == place.author.id}">
+                <form th:action="@{|/places/${place.id}/delete|}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                    <button type="submit" class="btn btn-danger">삭제</button>
+                </form>
+            </div>
+        </div>
     </section>
 
-    <div th:if="${session.LOGIN_USER != null
-            and place.author != null
-            and session.LOGIN_USER.id == place.author.id}">
-    <!-- 오른쪽: 수정 폼 -->
-    <section>
-        <h2>정보 수정</h2>
-        <form th:action="@{|/places/${place.id}/edit|}" method="post">
-            <div class="form-row">
-                <label for="name">이름 *</label>
-                <input id="name" name="name" type="text" required th:value="${place.name}">
-            </div>
+    <div th:if="${session.LOGIN_USER != null and place.author != null and session.LOGIN_USER.id == place.author.id}" class="section">
+        <section class="card" style="padding:16px;">
+            <h2>정보 수정</h2>
+            <form th:action="@{|/places/${place.id}/edit|}" method="post">
+                <div class="form-row">
+                    <label for="name">이름 *</label>
+                    <input id="name" name="name" type="text" required th:value="${place.name}">
+                </div>
 
-            <div class="form-row">
-                <label for="address">주소</label>
-                <input id="address" name="address" type="text" th:value="${place.address}">
-            </div>
+                <div class="form-row">
+                    <label for="address">주소</label>
+                    <input id="address" name="address" type="text" th:value="${place.address}">
+                </div>
 
-            <div class="form-row">
-                <label for="category">카테고리</label>
-                <input id="category" name="category" type="text" th:value="${place.category}">
-            </div>
+                <div class="form-row">
+                    <label for="category">카테고리</label>
+                    <input id="category" name="category" type="text" th:value="${place.category}">
+                </div>
 
-            <div class="form-row">
-                <label for="rating">평점(0~5)</label>
-                <select id="rating" name="rating">
-                    <option th:each="i : ${#numbers.sequence(0,5)}"
-                            th:value="${i}"
-                            th:selected="${place.rating != null and place.rating == i}"
-                            th:text="${i}"></option>
-                </select>
-            </div>
+                <div class="form-row">
+                    <label for="rating">평점(0~5)</label>
+                    <select id="rating" name="rating">
+                        <option th:each="i : ${#numbers.sequence(0,5)}" th:value="${i}" th:selected="${place.rating != null and place.rating == i}" th:text="${i}"></option>
+                    </select>
+                </div>
 
-            <div class="form-row">
-                <label for="imageUrl">이미지 URL</label>
-                <input id="imageUrl" name="imageUrl" type="url" th:value="${place.imageUrl}">
-            </div>
+                <div class="form-row">
+                    <label for="imageUrl">이미지 URL</label>
+                    <input id="imageUrl" name="imageUrl" type="url" th:value="${place.imageUrl}">
+                </div>
 
-            <div class="form-row">
-                <label for="memo">메모</label>
-                <textarea id="memo" name="memo" th:text="${place.memo}"></textarea>
-            </div>
+                <div class="form-row">
+                    <label for="memo">메모</label>
+                    <textarea id="memo" name="memo" th:text="${place.memo}"></textarea>
+                </div>
 
-            <div class="actions">
-                <button type="submit" class="button-link">수정 저장</button>
-                <a th:href="@{/places}" class="button-link" style="background:#eee;color:#333;">취소</a>
-            </div>
-        </form>
-    </section>
+                <div class="top">
+                    <button type="submit" class="btn btn-primary">수정 저장</button>
+                    <a th:href="@{/places}" class="btn">취소</a>
+                </div>
+            </form>
+        </section>
     </div>
 </main>
 

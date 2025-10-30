@@ -1,45 +1,58 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>리뷰 작성</title>
+    <meta charset="UTF-8">
+    <title>리뷰 작성</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}" />
 </head>
 <body>
-<h1>리뷰 작성</h1>
-<form method="post" action="/reviews">
-  <label>리뷰 선택:</label>
-  <select name="title" required>
-    <option th:each="m : ${movies}" th:value="${m.title}" th:text="${m.title}"></option>
-  </select>
-  <br><br>
+<div th:replace="~{fragments/header :: siteHeader('reviews')}"></div>
 
-  <textarea name="content" placeholder="후기 내용" required></textarea><br><br>
+<main class="wrap form-wrap">
+    <h1>리뷰 작성</h1>
+    <form method="post" action="/reviews">
+        <div class="form-row">
+            <label>리뷰 선택:</label>
+            <select name="title" required>
+                <option th:each="m : ${movies}" th:value="${m.title}" th:text="${m.title}"></option>
+            </select>
+        </div>
 
-<label>평점 선택:</label>
-<div class="rating">
-  <button type="button" data-value="1">⭐</button>
-  <button type="button" data-value="2">⭐⭐</button>
-  <button type="button" data-value="3">⭐⭐⭐</button>
-  <button type="button" data-value="4">⭐⭐⭐⭐</button>
-  <button type="button" data-value="5">⭐⭐⭐⭐⭐</button>
-</div>
-<input type="hidden" name="rating" id="ratingValue" required>
-  <button type="submit">등록</button>
-</form>
+        <div class="form-row">
+            <label>내용</label>
+            <textarea name="content" placeholder="후기 내용" required></textarea>
+        </div>
+
+        <div class="form-row">
+            <label>평점 선택:</label>
+            <div class="rating">
+                <button type="button" data-value="1">⭐</button>
+                <button type="button" data-value="2">⭐⭐</button>
+                <button type="button" data-value="3">⭐⭐⭐</button>
+                <button type="button" data-value="4">⭐⭐⭐⭐</button>
+                <button type="button" data-value="5">⭐⭐⭐⭐⭐</button>
+            </div>
+            <input type="hidden" name="rating" id="ratingValue" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">등록</button>
+        <a href="/reviews" class="btn">목록</a>
+    </form>
+</main>
 
 <script>
-  const ratingButtons = document.querySelectorAll('.rating button');
-  const ratingInput = document.getElementById('ratingValue');
-
-  ratingButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const val = btn.getAttribute('data-value');
-      ratingInput.value = val;
-
-      ratingButtons.forEach(b => b.style.backgroundColor = '');
-      btn.style.backgroundColor = 'gold';
+    const ratingButtons = document.querySelectorAll('.rating button');
+    const ratingInput = document.getElementById('ratingValue');
+    ratingButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.getAttribute('data-value');
+        ratingInput.value = val;
+        ratingButtons.forEach(b => b.style.backgroundColor = '');
+        btn.style.backgroundColor = 'gold';
+      });
     });
-  });
 </script>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
 </body>
 </html>
