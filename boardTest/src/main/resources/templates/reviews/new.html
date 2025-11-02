@@ -4,18 +4,56 @@
     <meta charset="UTF-8">
     <title>리뷰 작성</title>
     <link rel="stylesheet" th:href="@{/css/base.css}" />
+    <style>
+        .search-results {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            position: absolute;
+            width: 100%;
+            z-index: 100;
+        }
+        .search-results div {
+            padding: 8px;
+            cursor: pointer;
+        }
+        .search-results div:hover {
+            background-color: #f0f0f0;
+        }
+        .relative { position: relative; }
+    </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader('reviews')}"></div>
 
 <main class="wrap form-wrap">
     <h1>리뷰 작성</h1>
+
     <form method="post" action="/reviews">
+        <!-- 카테고리 선택 -->
         <div class="form-row">
-            <label>리뷰 선택:</label>
-            <select name="title" required>
-                <option th:each="m : ${movies}" th:value="${m.title}" th:text="${m.title}"></option>
+            <label>리뷰 종류:</label>
+            <select id="categorySelect" name="category" required>
+                <option value="">선택</option>
+                <option value="movie">영화</option>
+                <option value="trip">여행</option>
+                <option value="place">맛집</option>
             </select>
+        </div>
+
+        <!-- 자동완성 검색창 -->
+        <div class="form-row relative">
+            <label>대상 검색:</label>
+            <input type="text" id="searchInput" placeholder="검색어 입력" disabled>
+            <input type="hidden" name="targetId" id="targetId">
+            <div id="searchResults" class="search-results" style="display:none;"></div>
+        </div>
+
+        <div class="form-row">
+            <label>제목</label>
+            <input type="text" name="title" placeholder="리뷰 제목" required>
         </div>
 
         <div class="form-row">
@@ -24,7 +62,7 @@
         </div>
 
         <div class="form-row">
-            <label>평점 선택:</label>
+            <label>평점:</label>
             <div class="rating">
                 <button type="button" data-value="1">⭐</button>
                 <button type="button" data-value="2">⭐⭐</button>
@@ -41,6 +79,51 @@
 </main>
 
 <script>
+    const categorySelect = document.getElementById('categorySelect');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const targetIdInput = document.getElementById('targetId');
+
+    let currentCategory = "";
+
+    categorySelect.addEventListener('change', () => {
+      currentCategory = categorySelect.value;
+      searchInput.disabled = !currentCategory;
+      searchInput.value = "";
+      targetIdInput.value = "";
+      searchResults.style.display = 'none';
+    });
+
+    searchInput.addEventListener('input', async () => {
+      const keyword = searchInput.value.trim();
+      if (!keyword || !currentCategory) {
+        searchResults.style.display = 'none';
+        return;
+      }
+
+      const res = await fetch(`/reviews/search-targets?category=${currentCategory}&keyword=${encodeURIComponent(keyword)}`);
+      const data = await res.json();
+
+      if (data.length === 0) {
+        searchResults.innerHTML = '<div>검색 결과 없음</div>';
+      } else {
+        searchResults.innerHTML = data.map(d => `<div data-id="${d.id}">${d.name}</div>`).join('');
+      }
+      searchResults.style.display = 'block';
+    });
+
+    searchResults.addEventListener('click', e => {
+      const target = e.target.closest('div[data-id]');
+      if (!target) return;
+      const id = target.dataset.id;
+      const name = target.textContent;
+
+      searchInput.value = name;
+      targetIdInput.value = id;
+      searchResults.style.display = 'none';
+    });
+
+    // 평점 선택
     const ratingButtons = document.querySelectorAll('.rating button');
     const ratingInput = document.getElementById('ratingValue');
     ratingButtons.forEach(btn => {

@@ -2,6 +2,7 @@ package com.example.boardTest.service;
 
 import com.example.boardTest.domain.trip.TripCostCategory;
 import com.example.boardTest.dto.trip.TripStopCreateDTO;
+import com.example.boardTest.dto.trip.TripSummaryDTO;
 import com.example.boardTest.entity.TripPlan;
 import com.example.boardTest.entity.TripStop;
 import com.example.boardTest.entity.User;
@@ -21,6 +22,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -118,5 +120,18 @@ public class TripService {
             map.put(cat, sum);
         }
         return map;
+    }
+
+    // 리뷰 작성용 메서드
+
+    public List<TripSummaryDTO> findAllPlans() {
+        List<TripPlan> plans = planRepo.findAll(Sort.by(Sort.Direction.DESC, "id"));
+        return plans.stream()
+                .map(TripSummaryDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<TripPlan> search(String keyword) {
+        return planRepo.findByTitleContainingIgnoreCase(keyword);
     }
 }

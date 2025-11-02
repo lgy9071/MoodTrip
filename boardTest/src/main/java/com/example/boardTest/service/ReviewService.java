@@ -16,12 +16,14 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
 
-    public Review saveReview(String title, String content, int rating, User author) {
+    public Review saveReview(String title, String content, int rating, User author, String category, Long targetId) {
         Review review = Review.builder()
                 .title(title)
                 .content(content)
                 .rating(rating)
                 .author(author)
+                .category(category)
+                .targetId(targetId)
                 .build();
         return reviewRepository.save(review);
     }
