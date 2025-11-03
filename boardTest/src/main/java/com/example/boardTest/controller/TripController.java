@@ -203,22 +203,6 @@ public class TripController {
         return "redirect:/trips";
     }
 
-    @DeleteMapping("/stops/{stopId}")
-    @ResponseBody
-    public void deleteStop(@PathVariable("stopId") Long stopId,
-                           @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
-        // 필요시 서비스에서 소유자 검증
-        tripService.removeStop(stopId);
-    }
-
-    @PatchMapping("/stops/{stopId}/day")
-    @ResponseBody
-    public void moveDay(@PathVariable("stopId") Long stopId,
-                        @RequestParam("newDay") int newDay,
-                        @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
-        tripService.moveDay(stopId, newDay);
-    }
-
     // (선택) 상세 화면의 "수정" 모달을 실제 저장하려면 PUT 엔드포인트도 구현 필요
     // @PutMapping("/stops/{stopId}") ...
 }
