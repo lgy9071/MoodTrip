@@ -30,4 +30,12 @@ public class Review extends Base{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="author_id")
     private User author;
+
+    // 어떤 종류의 리뷰인지 구분 (영화 / 여행 / 맛집)
+    @Column(nullable = false)
+    private String category; // "movie", "trip", "place"
+
+    // 리뷰 대상의 id (Post, Trip, Place 등)
+    @Column(nullable = false)
+    private Long targetId;
 }

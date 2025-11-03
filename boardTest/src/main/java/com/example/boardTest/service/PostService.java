@@ -122,4 +122,7 @@ public class PostService {
                 Sort.by(Sort.Direction.DESC, "createdAt"))).getContent();
     }
 
+    public List<Post> search(String keyword) {
+        return repo.findByTitleContainingIgnoreCase(keyword);
+    }
 }

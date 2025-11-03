@@ -1,45 +1,141 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>리뷰 작성</title>
+    <meta charset="UTF-8">
+    <title>리뷰 작성</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}" />
+    <style>
+        .search-results {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            position: absolute;
+            width: 100%;
+            z-index: 100;
+        }
+        .search-results div {
+            padding: 8px;
+            cursor: pointer;
+        }
+        .search-results div:hover {
+            background-color: #f0f0f0;
+        }
+        .relative { position: relative; }
+    </style>
 </head>
 <body>
-<h1>리뷰 작성</h1>
-<form method="post" action="/reviews">
-  <label>리뷰 선택:</label>
-  <select name="title" required>
-    <option th:each="m : ${movies}" th:value="${m.title}" th:text="${m.title}"></option>
-  </select>
-  <br><br>
+<div th:replace="~{fragments/header :: siteHeader('reviews')}"></div>
 
-  <textarea name="content" placeholder="후기 내용" required></textarea><br><br>
+<main class="wrap form-wrap">
+    <h1>리뷰 작성</h1>
 
-<label>평점 선택:</label>
-<div class="rating">
-  <button type="button" data-value="1">⭐</button>
-  <button type="button" data-value="2">⭐⭐</button>
-  <button type="button" data-value="3">⭐⭐⭐</button>
-  <button type="button" data-value="4">⭐⭐⭐⭐</button>
-  <button type="button" data-value="5">⭐⭐⭐⭐⭐</button>
-</div>
-<input type="hidden" name="rating" id="ratingValue" required>
-  <button type="submit">등록</button>
-</form>
+    <form method="post" action="/reviews">
+        <!-- 카테고리 선택 -->
+        <div class="form-row">
+            <label>리뷰 종류:</label>
+            <select id="categorySelect" name="category" required>
+                <option value="">선택</option>
+                <option value="movie">영화</option>
+                <option value="trip">여행</option>
+                <option value="place">맛집</option>
+            </select>
+        </div>
+
+        <!-- 자동완성 검색창 -->
+        <div class="form-row relative">
+            <label>대상 검색:</label>
+            <input type="text" id="searchInput" placeholder="검색어 입력" disabled>
+            <input type="hidden" name="targetId" id="targetId">
+            <div id="searchResults" class="search-results" style="display:none;"></div>
+        </div>
+
+        <div class="form-row">
+            <label>제목</label>
+            <input type="text" name="title" placeholder="리뷰 제목" required>
+        </div>
+
+        <div class="form-row">
+            <label>내용</label>
+            <textarea name="content" placeholder="후기 내용" required></textarea>
+        </div>
+
+        <div class="form-row">
+            <label>평점:</label>
+            <div class="rating">
+                <button type="button" data-value="1">⭐</button>
+                <button type="button" data-value="2">⭐⭐</button>
+                <button type="button" data-value="3">⭐⭐⭐</button>
+                <button type="button" data-value="4">⭐⭐⭐⭐</button>
+                <button type="button" data-value="5">⭐⭐⭐⭐⭐</button>
+            </div>
+            <input type="hidden" name="rating" id="ratingValue" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">등록</button>
+        <a href="/reviews" class="btn">목록</a>
+    </form>
+</main>
 
 <script>
-  const ratingButtons = document.querySelectorAll('.rating button');
-  const ratingInput = document.getElementById('ratingValue');
+    const categorySelect = document.getElementById('categorySelect');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const targetIdInput = document.getElementById('targetId');
 
-  ratingButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const val = btn.getAttribute('data-value');
-      ratingInput.value = val;
+    let currentCategory = "";
 
-      ratingButtons.forEach(b => b.style.backgroundColor = '');
-      btn.style.backgroundColor = 'gold';
+    categorySelect.addEventListener('change', () => {
+      currentCategory = categorySelect.value;
+      searchInput.disabled = !currentCategory;
+      searchInput.value = "";
+      targetIdInput.value = "";
+      searchResults.style.display = 'none';
     });
-  });
+
+    searchInput.addEventListener('input', async () => {
+      const keyword = searchInput.value.trim();
+      if (!keyword || !currentCategory) {
+        searchResults.style.display = 'none';
+        return;
+      }
+
+      const res = await fetch(`/reviews/search-targets?category=${currentCategory}&keyword=${encodeURIComponent(keyword)}`);
+      const data = await res.json();
+
+      if (data.length === 0) {
+        searchResults.innerHTML = '<div>검색 결과 없음</div>';
+      } else {
+        searchResults.innerHTML = data.map(d => `<div data-id="${d.id}">${d.name}</div>`).join('');
+      }
+      searchResults.style.display = 'block';
+    });
+
+    searchResults.addEventListener('click', e => {
+      const target = e.target.closest('div[data-id]');
+      if (!target) return;
+      const id = target.dataset.id;
+      const name = target.textContent;
+
+      searchInput.value = name;
+      targetIdInput.value = id;
+      searchResults.style.display = 'none';
+    });
+
+    // 평점 선택
+    const ratingButtons = document.querySelectorAll('.rating button');
+    const ratingInput = document.getElementById('ratingValue');
+    ratingButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.getAttribute('data-value');
+        ratingInput.value = val;
+        ratingButtons.forEach(b => b.style.backgroundColor = '');
+        btn.style.backgroundColor = 'gold';
+      });
+    });
 </script>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
 </body>
 </html>

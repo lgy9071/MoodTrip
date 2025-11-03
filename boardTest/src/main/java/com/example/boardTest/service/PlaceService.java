@@ -1,5 +1,6 @@
 package com.example.boardTest.service;
 
+import com.example.boardTest.dto.place.PlaceDTO;
 import com.example.boardTest.entity.Place;
 import com.example.boardTest.entity.PlaceFavorite;
 import com.example.boardTest.entity.User;
@@ -12,7 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -82,5 +85,16 @@ public class PlaceService {
 
     public long favoriteCount(Long placeId) {
         return favRepo.countByPlaceId(placeId);
+    }
+
+    public List<PlaceDTO> findAllPlaces() {
+        List<Place> places = repo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        return places.stream()
+                .map(PlaceDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<Place> search(String keyword) {
+        return repo.findByNameContainingIgnoreCaseOrCategoryContainingIgnoreCase(keyword, keyword);
     }
 }

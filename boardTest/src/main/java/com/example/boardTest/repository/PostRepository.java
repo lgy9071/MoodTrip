@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -21,4 +23,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByType(ContentType type, Pageable pageable);
 
     Page<Post> findByTypeAndPlatformIgnoreCase(ContentType type, String platform, Pageable pageable);
+
+    List<Post> findByTitleContainingIgnoreCase(String keyword);
 }

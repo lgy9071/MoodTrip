@@ -1,26 +1,23 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>메인 화면</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}" />
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader('home')}"></div>
 
-<main id="home" class="home-main">
-
-    <!-- Hero: 사이트 첫인상 / 여자친구를 위한 문구 -->
+<main id="home" class="home-main wrap">
+    <!-- Hero -->
     <section class="hero">
         <div class="hero__inner">
             <h1 class="hero__title">MoodTrip</h1>
-            <p class="hero__subtitle">
-                우리 취향에 맞춰진, 여행·맛집을 담다
-            </p>
-            <!-- 향후 배경: 살짝 흐린 데이트 사진/여행 전경 or 파스텔 그래디언트 -->
+            <p class="hero__subtitle">우리 취향에 맞춰진, 여행·맛집을 담다</p>
         </div>
     </section>
 
-    <!-- Category Intro: 각 섹션 소개 (헤더에 링크가 있어도, 메인에선 '감성 소개' 중심) -->
+    <!-- Categories -->
     <section class="categories">
         <header class="section-head">
             <h2 class="section-title">무드별 카테고리</h2>
@@ -28,67 +25,53 @@
         </header>
 
         <div class="category-grid">
-
-            <!-- 여행 -->
             <article class="cat-card cat-card--travel">
                 <figure class="cat-card__media">
                     <img src="/images/placeholder/temporary.png" alt="여행">
                 </figure>
                 <div class="cat-card__body">
                     <h3 class="cat-card__title">여행</h3>
-                    <p class="cat-card__desc">
-                        계획부터 추억까지, 우리의 일기.
-                    </p>
+                    <p class="cat-card__desc">계획부터 추억까지, 우리의 일기.</p>
                     <a href="/trips" class="cat-card__link">둘러보기</a>
                 </div>
             </article>
 
-            <!-- 맛집 -->
             <article class="cat-card cat-card--food">
                 <figure class="cat-card__media">
                     <img src="/images/placeholder/temporary.png" alt="맛집">
                 </figure>
                 <div class="cat-card__body">
                     <h3 class="cat-card__title">맛집</h3>
-                    <p class="cat-card__desc">
-                        우리만의 단골집을 만들어 봐요.
-                    </p>
+                    <p class="cat-card__desc">우리만의 단골집을 만들어 봐요.</p>
                     <a href="/places" class="cat-card__link">둘러보기</a>
                 </div>
             </article>
 
-            <!-- 영화 -->
             <article class="cat-card cat-card--movie">
                 <figure class="cat-card__media">
-                    <!-- * 임시 이미지 경로. 나중에 교체 -->
                     <img src="/images/placeholder/temporary.png" alt="영화">
                 </figure>
                 <div class="cat-card__body">
                     <h3 class="cat-card__title">영화</h3>
-                    <p class="cat-card__desc">
-                        비 오는 날엔 잔잔하게, 설레는 주말엔 로맨틱하게.
-                    </p>
+                    <p class="cat-card__desc">비 오는 날엔 잔잔하게, 설레는 주말엔 로맨틱하게.</p>
                     <a href="/coming-soon" class="cat-card__link">둘러보기</a>
                 </div>
             </article>
 
-            <!-- 악세사리 -->
             <article class="cat-card cat-card--shop">
                 <figure class="cat-card__media">
                     <img src="/images/placeholder/temporary.png" alt="악세사리">
                 </figure>
                 <div class="cat-card__body">
                     <h3 class="cat-card__title">악세사리</h3>
-                    <p class="cat-card__desc">
-                        귀여운 우리 아기를 위한 소품을 추천해요.
-                    </p>
+                    <p class="cat-card__desc">귀여운 우리 아기를 위한 소품을 추천해요.</p>
                     <a href="/coming-soon" class="cat-card__link">둘러보기</a>
                 </div>
             </article>
         </div>
     </section>
 
-    <!-- Today Pick: 오늘의 추천 한 장면 (나중에 랜덤/룰 기반으로 바꿔도 됨) -->
+    <!-- Today Pick -->
     <section class="today-pick">
         <header class="section-head">
             <h2 class="section-title">오늘의 무드 Pick</h2>
@@ -101,15 +84,13 @@
             </figure>
             <div class="pick-card__body">
                 <h3 class="pick-card__title">“여기 다녀왔는데 너무 좋았대”</h3>
-                <p class="pick-card__desc">
-                    여행 후기 중 리뷰 평점이 높은 장소들만 모았어요.
-                </p>
+                <p class="pick-card__desc">여행 후기 중 리뷰 평점이 높은 장소들만 모았어요.</p>
                 <a href="/reviews" class="btn btn--link">리뷰 보러가기 →</a>
             </div>
         </article>
     </section>
 
-    <!-- Small Notes: 우리만의 메모 (나중에 로그인시 개인화 문구 출력) -->
+    <!-- Notes -->
     <section class="notes">
         <header class="section-head">
             <h2 class="section-title">오늘의 한 줄</h2>
@@ -119,7 +100,6 @@
             <cite>— 운영자 —</cite>
         </blockquote>
     </section>
-
 </main>
 
 <div th:replace="~{fragments/footer :: siteFooter}"></div>

@@ -3,24 +3,20 @@
 <head>
     <meta charset="UTF-8"/>
     <title>여행 계획 목록</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}" />
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader('trips')}"></div>
 
-<main style="padding:16px 0;">
+<main class="wrap">
     <div class="top">
         <h1>여행 계획</h1>
 
-        <!-- 비로그인일 때: 모달 띄운 뒤 이동 -->
-        <a class="btn btn-primary"
-           th:if="${session.LOGIN_USER == null}"
-           href="#"
-           onclick="openLoginModal(event)">+ 새 계획</a>
+        <!-- 비로그인: 모달 안내 후 이동 -->
+        <a class="btn btn-primary" th:if="${session.LOGIN_USER == null}" href="#" onclick="openLoginModal(event)">+ 새 계획</a>
 
-        <!-- 로그인 상태일 때: 그대로 새 계획으로 -->
-        <a class="btn btn-primary"
-           th:if="${session.LOGIN_USER != null}"
-           th:href="@{/trips/new}">+ 새 계획</a>
+        <!-- 로그인 상태 -->
+        <a class="btn btn-primary" th:if="${session.LOGIN_USER != null}" th:href="@{/trips/new}">+ 새 계획</a>
     </div>
 
     <div th:if="${msg}" class="msg" th:text="${msg}"></div>
@@ -38,21 +34,14 @@
         </thead>
         <tbody>
         <tr th:each="p, i : ${plans.content}">
-            <!-- 번호: 페이지 내 1,2,3… 이면 i.count / 전체 역순이면 아래 주석-->
             <td th:text="${i.count}"></td>
-            <!-- 전체 역순 : th:text="${plans.totalElements - (plans.number * plans.size) - i.index}" -->
-
             <td><a th:href="@{|/trips/${p.id}|}" th:text="${p.title}"></a></td>
             <td th:text="${p.startDate} + ' ~ ' + ${p.endDate}"></td>
-
-            <!-- 작성자 출력 -->
             <td th:text="${p.owner != null && p.owner.name != null ? p.owner.name : (p.owner != null ? p.owner.username : '-')}"></td>
-
-            <!-- createdAt null-safe -->
             <td th:text="${p.createdAt != null ? #temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
         </tr>
         <tr th:if="${plans.content.size()==0}">
-            <td colspan="5" style="text-align:center;color:#888;">등록된 여행 계획이 없습니다.</td>
+            <td colspan="5" class="muted" style="text-align:center;">등록된 여행 계획이 없습니다.</td>
         </tr>
         </tbody>
     </table>
@@ -66,21 +55,16 @@
 
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
 
-<!-- SweetAlert2 (CDN) -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     function openLoginModal(e) {
       e.preventDefault();
-
-      // Swal이 안 뜨는 환경 대비: 기본 confirm으로 폴백
       if (typeof Swal === 'undefined') {
         if (confirm('로그인이 필요합니다.\n로그인하시겠습니까?')) {
           window.location.href = '/login?next=/trips/new';
         }
         return;
       }
-
       Swal.fire({
         title: '로그인이 필요합니다',
         text: '로그인하시겠습니까?',
@@ -90,10 +74,8 @@
         cancelButtonText: '취소',
         reverseButtons: true,
         focusConfirm: false
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = '/login?next=/trips/new';
-        }
+      }).then((r) => {
+        if (r.isConfirmed) window.location.href = '/login?next=/trips/new';
       });
     }
 </script>

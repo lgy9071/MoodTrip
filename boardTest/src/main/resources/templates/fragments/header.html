@@ -5,37 +5,33 @@
     <title>header</title>
 </head>
 <body>
-<header th:fragment="siteHeader(active)">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;">
+<header th:fragment="siteHeader(active)" class="site-header">
+    <div class="wrap site-header__bar">
 
         <!-- 좌측: 로고 -->
-        <a href="/" th:text="#{app.title}" style="text-decoration:none;color:#222;font-weight:700;font-size:20px;">MoodTrip</a>
+        <a href="/" th:text="#{app.title}" class="brand">MoodTrip</a>
 
         <!-- 중앙: 네비 -->
-        <nav style="display:flex;gap:12px;flex:1;justify-content:center;">
-            <a href="/trips"   th:text="#{nav.trips}">여행</a>
-            <a href="/places"  th:text="#{nav.places}">맛집</a>
-            <a href="/reviews" th:text="#{nav.reviews}">리뷰</a>
+        <nav class="nav">
+            <a href="/trips"   th:classappend="${active}=='trips' ? ' active'"   th:text="#{nav.trips}">여행</a>
+            <a href="/places"  th:classappend="${active}=='places' ? ' active'"  th:text="#{nav.places}">맛집</a>
+            <a href="/reviews" th:classappend="${active}=='reviews' ? ' active'" th:text="#{nav.reviews}">리뷰</a>
             <a href="/coming-soon" th:text="#{nav.videos}">영상</a>
             <a href="/coming-soon" th:text="#{nav.products}">용품</a>
-<!--            <a th:href="@{/places(favoritesOnly=true)}">내 즐겨찾기</a>-->
         </nav>
 
-        <!-- 우측: 로그인/언어 드롭다운 -->
-        <div style="display:flex;align-items:center;gap:12px;position:relative;">
-
-            <!-- 로그인 상태 -->
-            <span th:if="${session.LOGIN_USER == null}">
-        <a href="/login"  th:text="#{auth.login}"  style="margin-right:6px;">로그인</a>
+        <!-- 우측: 로그인/언어 -->
+        <div class="header-ops">
+      <span th:if="${session.LOGIN_USER == null}">
+        <a href="/login"  th:text="#{auth.login}">로그인</a>
         <a href="/signup" th:text="#{auth.signup}">회원가입</a>
       </span>
             <span th:if="${session.LOGIN_USER != null}">
-        <form th:action="@{/logout}" method="post" style="display:inline;">
-          <button type="submit" th:text="#{auth.logout}" style="background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;">로그아웃</button>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+          <button type="submit" class="btn btn-primary" th:text="#{auth.logout}">로그아웃</button>
         </form>
       </span>
 
-            <!-- 언어 선택 드롭다운 -->
             <div class="lang-dropdown">
                 <button class="lang-toggle">
                     🌐 <span th:text="${#locale.language?.toUpperCase()}">KO</span> ▼
@@ -49,11 +45,10 @@
         </div>
     </div>
 
-    <!-- 로그아웃 안내 -->
-    <div th:if="${param.loggedOut}"
-         style="margin-top:8px;background:#f5faff;border:1px solid #d6e9ff;color:#184a8b;padding:8px 10px;border-radius:8px;">
+    <div th:if="${param.loggedOut}" class="wrap msg">
         정상적으로 로그아웃되었습니다.
     </div>
+</header>
 
     <style>
         header a { color:#333; text-decoration:none; padding:6px 8px; border-radius:6px }

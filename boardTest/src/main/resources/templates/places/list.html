@@ -1,56 +1,58 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>맛집 리스트</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}" />
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader('places')}"></div>
-<main style="padding:16px 0;">
-<div class="header">
-    <form class="search-bar" method="get" action="/places">
-        <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어(카테고리/이름)">
-        <label style="margin-left:8px">
-            <input type="checkbox" name="favoritesOnly" value="true" th:checked="${favoritesOnly}"> 내 즐겨찾기만
-        </label>
-        <button type="submit">검색</button>
-    </form>
-</div>
 
-<h1>맛집</h1>
-<a href="/places/new" class="button-link">맛집 등록</a>
+<main class="wrap">
+    <div class="top">
+        <h1>맛집</h1>
+        <a href="/places/new" class="btn btn-primary">맛집 등록</a>
+    </div>
 
-<div class="card-container">
-    <div class="card" th:each="p : ${page.content}">
-        <img th:if="${p.imageUrl}" th:src="${p.imageUrl}" class="card-img">
-        <div class="card-body">
-            <h3><a th:href="@{/places/{id}(id=${p.id})}" th:text="${p.name}"></a></h3>
-            <p th:text="${p.category}"></p>
-            <p th:text="${p.address}"></p>
-            <p th:if="${p.rating != null}">
-                <span th:each="i : ${#numbers.sequence(1, p.rating)}">⭐</span>
-            </p>
+    <div class="section">
+        <form class="search-bar" method="get" action="/places">
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어(카테고리/이름)">
+            <label>
+                <input type="checkbox" name="favoritesOnly" value="true" th:checked="${favoritesOnly}"> 내 즐겨찾기만
+            </label>
+            <button type="submit" class="btn">검색</button>
+        </form>
+    </div>
 
-            <div th:if="${session.LOGIN_USER != null}">
-                <form th:action="@{|/places/${p.id}/favorite|}" method="post">
-                    <input type="hidden" name="back"
-                           th:value="@{|/places?page=${currentPage}&keyword=${keyword}&favoritesOnly=${favoritesOnly}|}">
-                    <button type="submit" class="button-link" style="padding:4px 8px">
-                        ♥ 즐겨찾기 토글
-                    </button>
-                </form>
+    <div class="card-container">
+        <div class="card" th:each="p : ${page.content}">
+            <img th:if="${p.imageUrl}" th:src="${p.imageUrl}" class="card-img" alt="">
+            <div class="card-body">
+                <h3><a th:href="@{/places/{id}(id=${p.id})}" th:text="${p.name}"></a></h3>
+                <p th:text="${p.category}"></p>
+                <p th:text="${p.address}"></p>
+                <p th:if="${p.rating != null}">
+                    <span th:each="i : ${#numbers.sequence(1, p.rating)}">⭐</span>
+                </p>
+
+                <div th:if="${session.LOGIN_USER != null}">
+                    <form th:action="@{|/places/${p.id}/favorite|}" method="post">
+                        <input type="hidden" name="back" th:value="@{|/places?page=${currentPage}&keyword=${keyword}&favoritesOnly=${favoritesOnly}|}">
+                        <button type="submit" class="btn">♥ 즐겨찾기 토글</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="pagination">
-  <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
-    <a th:if="${i != currentPage}" th:href="@{/places(page=${i}, keyword=${keyword})}" th:text="${i+1}"></a>
-    <span th:if="${i == currentPage}" th:text="${i+1}"></span>
-  </span>
-</div>
+    <div class="pagination">
+    <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
+      <a th:if="${i != currentPage}" th:href="@{/places(page=${i}, keyword=${keyword}, favoritesOnly=${favoritesOnly})}" th:text="${i+1}"></a>
+      <span th:if="${i == currentPage}" th:text="${i+1}"></span>
+    </span>
+    </div>
 </main>
+
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
 </body>
 </html>
