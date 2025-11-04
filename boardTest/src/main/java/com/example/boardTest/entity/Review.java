@@ -38,4 +38,6 @@ public class Review extends Base{
     // 리뷰 대상의 id (Post, Trip, Place 등)
     @Column(nullable = false)
     private Long targetId;
+
+    private String imageUrl;
 }

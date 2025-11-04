@@ -31,7 +31,7 @@
 <main class="wrap form-wrap">
     <h1>리뷰 작성</h1>
 
-    <form method="post" action="/reviews">
+    <form method="post" action="/reviews" enctype="multipart/form-data">
         <!-- 카테고리 선택 -->
         <div class="form-row">
             <label>리뷰 종류:</label>
@@ -72,6 +72,12 @@
             </div>
             <input type="hidden" name="rating" id="ratingValue" required>
         </div>
+
+        <div class="form-row">
+            <label>이미지 첨부:</label>
+            <input type="file" name="image" accept="image/*">
+        </div>
+
 
         <button type="submit" class="btn btn-primary">등록</button>
         <a href="/reviews" class="btn">목록</a>

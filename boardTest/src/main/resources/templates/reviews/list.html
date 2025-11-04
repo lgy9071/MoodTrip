@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <title>리뷰 목록</title>
     <link rel="stylesheet" th:href="@{/css/base.css}" />
+    <style>
+        .like-btn {
+          border: none;
+          background: none;
+          cursor: pointer;
+          font-size: 1.2rem;
+          transition: 0.2s;
+        }
+        .like-btn.liked {
+          color: #ff6464;
+          transform: scale(1.2);
+        }
+        .delete-form {
+            display: inline;
+        }
+    </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader('reviews')}"></div>
@@ -11,28 +27,83 @@
 <main class="wrap">
     <div class="top">
         <h1>리뷰 목록</h1>
-        <a href="/reviews/new" class="btn btn-primary">리뷰 작성</a>
+        <div class="filters">
+            <form method="get" action="/reviews" style="display:flex; gap:8px; align-items:center;">
+                <select name="category">
+                    <option value="">전체 카테고리</option>
+                    <option value="movie" th:selected="${category == 'movie'}">영화</option>
+                    <option value="trip" th:selected="${category == 'trip'}">여행</option>
+                    <option value="place" th:selected="${category == 'place'}">맛집</option>
+                </select>
+
+                <select name="sort">
+                    <option value="latest" th:selected="${sort == 'latest'}">최신순</option>
+                    <option value="ratingDesc" th:selected="${sort == 'ratingDesc'}">평점 높은순</option>
+                    <option value="ratingAsc" th:selected="${sort == 'ratingAsc'}">평점 낮은순</option>
+                </select>
+
+                <label>
+                    <input type="checkbox" name="mine" th:checked="${mine}" value="true"> 내 리뷰만
+                </label>
+
+                <button type="submit" class="btn btn-primary">적용</button>
+            </form>
+            <a href="/reviews/new" class="btn btn-secondary">리뷰 작성</a>
+        </div>
     </div>
 
     <div class="card-container">
         <div class="card" th:each="r : ${reviewPage.content}">
             <div class="card-body">
                 <h3><a th:href="@{/reviews/{id}(id=${r.id})}" th:text="${r.title}"></a></h3>
-                <p><b>작성자:</b> <span th:text="${r.author.username}"></span></p>
+                <p><b>작성자:</b> <span th:text="${r.authorName}"></span></p>
                 <p><b>평점:</b> <span th:text="${r.rating}"></span></p>
+                <p><b>좋아요:</b>
+                    <button type="button" class="like-btn" th:data-id="${r.id}" th:id="'likeBtn-' + ${r.id}">👍</button>
+                    <span th:id="'likeCount-' + ${r.id}" th:text="${r.likeCount}">0</span>
+                </p>
+
+                <div th:if="${session.LOGIN_USER != null and session.LOGIN_USER.username == r.authorName}">
+                    <form th:action="@{/reviews/{id}/delete(id=${r.id})}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('리뷰를 삭제하시겠습니까?')">삭제</button>
+                    </form>
+                </div>
+
                 <p class="muted" th:text="${#temporals.format(r.createdAt,'yyyy-MM-dd')}"></p>
             </div>
         </div>
     </div>
 
     <div class="pagination">
-    <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
-      <a th:if="${i != currentPage}" th:href="@{/reviews(page=${i})}" th:text="${i+1}"></a>
-      <span th:if="${i == currentPage}" th:text="${i+1}"></span>
-    </span>
+        <span th:each="i : ${#numbers.sequence(0, totalPages-1)}">
+            <a th:if="${i != currentPage}" th:href="@{/reviews(page=${i})}" th:text="${i+1}"></a>
+            <span th:if="${i == currentPage}" th:text="${i+1}"></span>
+        </span>
     </div>
 </main>
 
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
+
+<script>
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const res = await fetch(`/reviews/${id}/like`, { method: 'POST' });
+
+            if (res.status === 401) {
+                alert('로그인 후 이용 가능합니다.');
+                return;
+            }
+
+            const data = await res.json();
+            const countSpan = document.getElementById(`likeCount-${id}`);
+
+            countSpan.textContent = data.likeCount;
+            btn.classList.toggle('liked', data.liked);
+            btn.textContent = data.liked ? '💖' : '👍';
+        });
+    });
+</script>
 </body>
 </html>
