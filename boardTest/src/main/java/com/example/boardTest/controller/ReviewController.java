@@ -1,5 +1,6 @@
 package com.example.boardTest.controller;
 
+import com.example.boardTest.dto.review.ReviewListDTO;
 import com.example.boardTest.entity.board.Post;
 import com.example.boardTest.entity.Review;
 import com.example.boardTest.entity.User;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -27,13 +29,27 @@ public class ReviewController {
     private final PlaceService placeService;
 
     @GetMapping
-    public String list(@RequestParam(defaultValue = "0") int page, Model model) {
-        if (page < 0) page = 0;
-        Page<Review> reviewPage = reviewService.getReviews(page, 5);
+    public String list(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false, defaultValue = "false") boolean mine,
+            HttpSession session,
+            Model model) {
+
+        User currentUser = (User) session.getAttribute("LOGIN_USER");
+
+        Page<ReviewListDTO> reviewPage = reviewService.getFilteredReviews(
+                page, size, sort, category, mine ? currentUser : null);
 
         model.addAttribute("reviewPage", reviewPage);
         model.addAttribute("currentPage", reviewPage.getNumber());
         model.addAttribute("totalPages", reviewPage.getTotalPages());
+        model.addAttribute("sort", sort);
+        model.addAttribute("category", category);
+        model.addAttribute("mine", mine);
+
         return "reviews/list";
     }
 
@@ -51,14 +67,14 @@ public class ReviewController {
                          @RequestParam("rating") int rating,
                          @RequestParam("category") String category,
                          @RequestParam("targetId") Long targetId,
+                         @RequestParam(value = "image", required = false) MultipartFile image,
                          HttpSession session) {
 
         User currentUser = (User) session.getAttribute("LOGIN_USER");
-        if(currentUser == null){
+        if (currentUser == null)
             throw new IllegalStateException("로그인이 필요합니다.");
-        }
 
-        reviewService.saveReview(title, content, rating, currentUser, category, targetId);
+        reviewService.saveReview(title, content, rating, currentUser, category, targetId, image);
         return "redirect:/reviews";
     }
 
@@ -69,10 +85,38 @@ public class ReviewController {
         return "reviews/detail";
     }
 
+    // 삭제
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable(name = "id") Long id, HttpSession session) {
+    public String delete(@PathVariable Long id, HttpSession session) {
         User currentUser = (User) session.getAttribute("LOGIN_USER");
         reviewService.deleteReview(id, currentUser);
         return "redirect:/reviews";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Long id, Model model, HttpSession session) {
+        User currentUser = (User) session.getAttribute("LOGIN_USER");
+        Review review = reviewService.getReview(id);
+
+        if (!review.getAuthor().getId().equals(currentUser.getId())) {
+            throw new IllegalStateException("본인만 수정할 수 있습니다.");
+        }
+
+        model.addAttribute("review", review);
+        return "reviews/edit";
+    }
+
+    // 수정 처리
+    @PostMapping("/{id}/edit")
+    public String update(@PathVariable Long id,
+                         @RequestParam("title") String title,
+                         @RequestParam("content") String content,
+                         @RequestParam("rating") int rating,
+                         @RequestParam(value = "image", required = false) MultipartFile image,
+                         HttpSession session) {
+
+        User currentUser = (User) session.getAttribute("LOGIN_USER");
+        reviewService.updateReview(id, title, content, rating, image, currentUser);
+        return "redirect:/reviews/" + id;
     }
 }

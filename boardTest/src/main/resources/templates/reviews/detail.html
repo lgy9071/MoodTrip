@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <title>리뷰 상세</title>
     <link rel="stylesheet" th:href="@{/css/base.css}" />
+    <style>
+        .like-section .btn.liked {
+            background-color: #ff7b7b;
+            color: white;
+            border: none;
+        }
+        .review-img {
+            margin: 12px 0;
+            max-width: 400px;
+            border-radius: 8px;
+        }
+        .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+    </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader('reviews')}"></div>
@@ -13,20 +30,58 @@
         <h1 th:text="${review.title}"></h1>
         <p><b>작성자:</b> <span th:text="${review.author.username}"></span></p>
         <p><b>평점:</b> <span th:text="${review.rating}"></span></p>
-        <p class="muted"><b>작성일:</b> <span th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+        <p class="muted">
+            <b>작성일:</b> <span th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+        </p>
+
+        <div th:if="${review.imageUrl != null}">
+            <img th:src="${review.imageUrl}" alt="리뷰 이미지" class="review-img">
+        </div>
+
         <hr>
         <p th:text="${review.content}"></p>
 
-        <div th:if="${session.LOGIN_USER != null and #ids.eq(session.LOGIN_USER.id, place.author?.id)}" class="section">
-            <form method="post" th:action="@{/reviews/{id}/delete(id=${review.id})}">
-                <button type="submit" class="btn btn-danger">삭제</button>
-            </form>
+        <div class="like-section" style="margin-top:10px;">
+            <button id="likeBtn" class="btn btn-outline">👍 좋아요</button>
+            <span id="likeCount">0</span>
         </div>
 
-        <a href="/reviews" class="btn">목록으로</a>
+        <div class="actions">
+            <a href="/reviews" class="btn">목록으로</a>
+
+            <a th:if="${session.LOGIN_USER != null and session.LOGIN_USER.id == review.author.id}"
+               th:href="@{/reviews/{id}/edit(id=${review.id})}"
+               class="btn btn-primary">수정</a>
+
+            <form th:if="${session.LOGIN_USER != null and session.LOGIN_USER.id == review.author.id}"
+                  th:action="@{/reviews/{id}/delete(id=${review.id})}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('리뷰를 삭제하시겠습니까?')">삭제</button>
+            </form>
+        </div>
     </section>
 </main>
 
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
+
+<script th:inline="javascript">
+    const reviewId = [[${review.id}]];
+
+    async function fetchLikeCount() {
+        const res = await fetch(`/reviews/${reviewId}/like`, { method: 'POST' });
+        if (res.status === 401) {
+            alert('로그인 후 이용 가능합니다.');
+            return;
+        }
+        const data = await res.json();
+        const btn = document.getElementById('likeBtn');
+        const count = document.getElementById('likeCount');
+        count.textContent = data.likeCount;
+        btn.classList.toggle('liked', data.liked);
+        btn.textContent = data.liked ? '💖 좋아요 취소' : '👍 좋아요';
+    }
+
+    document.getElementById('likeBtn').addEventListener('click', fetchLikeCount);
+</script>
 </body>
 </html>
