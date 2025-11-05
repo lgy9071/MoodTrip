@@ -3,6 +3,7 @@ package com.example.boardTest.dto.place;
 import com.example.boardTest.entity.Place;
 import lombok.*;
 
+// 출력용 (view/응답)
 @Getter
 @Setter
 @AllArgsConstructor

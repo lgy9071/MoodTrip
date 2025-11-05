@@ -1,6 +1,8 @@
 package com.example.boardTest.controller;
 
+import com.example.boardTest.dto.review.ReviewCreateRequest;
 import com.example.boardTest.dto.review.ReviewListDTO;
+import com.example.boardTest.dto.review.ReviewUpdateRequest;
 import com.example.boardTest.entity.board.Post;
 import com.example.boardTest.entity.Review;
 import com.example.boardTest.entity.User;
@@ -29,14 +31,13 @@ public class ReviewController {
     private final PlaceService placeService;
 
     @GetMapping
-    public String list(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "latest") String sort,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false, defaultValue = "false") boolean mine,
-            HttpSession session,
-            Model model) {
+    public String list(@RequestParam(defaultValue = "0") int page,
+                       @RequestParam(defaultValue = "5") int size,
+                       @RequestParam(defaultValue = "latest") String sort,
+                       @RequestParam(required = false) String category,
+                       @RequestParam(required = false, defaultValue = "false") boolean mine,
+                       HttpSession session,
+                       Model model) {
 
         User currentUser = (User) session.getAttribute("LOGIN_USER");
 
@@ -62,19 +63,20 @@ public class ReviewController {
     }
 
     @PostMapping
-    public String create(@RequestParam("title") String title,
-                         @RequestParam("content") String content,
-                         @RequestParam("rating") int rating,
-                         @RequestParam("category") String category,
-                         @RequestParam("targetId") Long targetId,
-                         @RequestParam(value = "image", required = false) MultipartFile image,
-                         HttpSession session) {
-
+    public String create(@ModelAttribute ReviewCreateRequest dto, HttpSession session) {
         User currentUser = (User) session.getAttribute("LOGIN_USER");
         if (currentUser == null)
             throw new IllegalStateException("로그인이 필요합니다.");
 
-        reviewService.saveReview(title, content, rating, currentUser, category, targetId, image);
+        reviewService.saveReview(
+                dto.getTitle(),
+                dto.getContent(),
+                dto.getRating(),
+                currentUser,
+                dto.getCategory(),
+                dto.getTargetId(),
+                dto.getImage()
+        );
         return "redirect:/reviews";
     }
 
@@ -109,14 +111,18 @@ public class ReviewController {
     // 수정 처리
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id,
-                         @RequestParam("title") String title,
-                         @RequestParam("content") String content,
-                         @RequestParam("rating") int rating,
-                         @RequestParam(value = "image", required = false) MultipartFile image,
+                         @ModelAttribute ReviewUpdateRequest dto,
                          HttpSession session) {
 
         User currentUser = (User) session.getAttribute("LOGIN_USER");
-        reviewService.updateReview(id, title, content, rating, image, currentUser);
+        reviewService.updateReview(
+                id,
+                dto.getTitle(),
+                dto.getContent(),
+                dto.getRating(),
+                dto.getImage(),
+                currentUser
+        );
         return "redirect:/reviews/" + id;
     }
 }

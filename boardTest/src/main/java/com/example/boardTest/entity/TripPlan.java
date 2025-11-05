@@ -36,7 +36,7 @@ public class TripPlan {
     private User owner;
 
     // 일대다 연관 + 자동 제거
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.REMOVE, orphanRemoval = true) @Builder.Default
     private List<TripStop> stops = new ArrayList<>();
 
     @CreatedDate

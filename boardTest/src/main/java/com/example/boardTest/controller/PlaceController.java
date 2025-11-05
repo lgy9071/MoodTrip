@@ -1,5 +1,7 @@
 package com.example.boardTest.controller;
 
+import com.example.boardTest.dto.place.PlaceCreateRequest;
+import com.example.boardTest.dto.place.PlaceDTO;
 import com.example.boardTest.entity.Place;
 import com.example.boardTest.entity.User;
 import com.example.boardTest.service.PlaceService;
@@ -33,7 +35,7 @@ public class PlaceController {
                     + (keyword != null ? "&keyword=" + keyword : "")
                     + (favoritesOnly ? "&favoritesOnly=true" : "");
 
-        model.addAttribute("page", pg);
+        model.addAttribute("page", pg.map(PlaceDTO::fromEntity));
         model.addAttribute("currentPage", pg.getNumber());
         model.addAttribute("totalPages", total);
         model.addAttribute("keyword", keyword);
@@ -52,12 +54,7 @@ public class PlaceController {
     }
 
     @PostMapping
-    public String create(@RequestParam("name") String name,
-                         @RequestParam(required = false) String address,
-                         @RequestParam(required = false) String category,
-                         @RequestParam(required = false) Integer rating,
-                         @RequestParam(required = false) String imageUrl,
-                         @RequestParam(required = false) String memo,
+    public String create(@ModelAttribute PlaceCreateRequest dto,
                          HttpSession session,
                          RedirectAttributes ra) {
         User user = (User) session.getAttribute("LOGIN_USER");
@@ -65,7 +62,8 @@ public class PlaceController {
             ra.addFlashAttribute("msg", "로그인이 필요합니다.");
             return "redirect:/login?next=/places/new";
         }
-        service.create(name, address, category, rating, imageUrl, memo, user);
+        service.create(dto.getName(), dto.getAddress(), dto.getCategory(),
+                       dto.getRating(), dto.getImageUrl(), dto.getMemo(), user);
         return "redirect:/places";
     }
 
@@ -73,12 +71,13 @@ public class PlaceController {
     public String detail(@PathVariable("id") Long id, Model model, HttpSession session) {
         Place place = service.find(id);
         User me = (User) session.getAttribute("LOGIN_USER");
+
         boolean isOwner = (me != null && place.getAuthor() != null
                 && me.getId().equals(place.getAuthor().getId()));
         boolean isFav = service.isFavorited(id, me != null ? me.getId() : null);
         long favCount = service.favoriteCount(id);
 
-        model.addAttribute("place", place);
+        model.addAttribute("place", PlaceDTO.fromEntity(place));
         model.addAttribute("isOwner", isOwner);
         model.addAttribute("isFav", isFav);
         model.addAttribute("favCount", favCount);
@@ -87,15 +86,11 @@ public class PlaceController {
 
     @PostMapping("/{id}/edit")
     public String edit(@PathVariable("id") Long id,
-                       @RequestParam("name") String name,
-                       @RequestParam(required = false) String address,
-                       @RequestParam(required = false) String category,
-                       @RequestParam(required = false) Integer rating,
-                       @RequestParam(required = false) String imageUrl,
-                       @RequestParam(required = false) String memo,
+                       @ModelAttribute PlaceCreateRequest dto,
                        HttpSession session) {
         User user = (User) session.getAttribute("LOGIN_USER");
-        service.update(id, name, address, category, rating, imageUrl, memo, user);
+        service.update(id, dto.getName(), dto.getAddress(), dto.getCategory(),
+                       dto.getRating(), dto.getImageUrl(), dto.getMemo(), user);
         return "redirect:/places/" + id;
     }
 
@@ -108,7 +103,7 @@ public class PlaceController {
 
     @PostMapping("/{id}/favorite")
     public String toggleFavorite(@PathVariable("id") Long id,
-                                 @RequestParam(required = false) String back, // 돌아갈 곳(옵션)
+                                 @RequestParam(required = false) String back,
                                  HttpSession session, RedirectAttributes ra) {
         User me = (User) session.getAttribute("LOGIN_USER");
         if (me == null) {
@@ -117,7 +112,6 @@ public class PlaceController {
         }
         boolean nowFav = service.toggleFavorite(id, me);
         ra.addFlashAttribute("msg", nowFav ? "즐겨찾기에 추가했어요." : "즐겨찾기를 해제했어요.");
-        // 기본은 상세로 복귀, back 파라미터가 있으면 그쪽으로
         return (back != null && !back.isBlank()) ? "redirect:" + back : "redirect:/places/" + id;
     }
 }
