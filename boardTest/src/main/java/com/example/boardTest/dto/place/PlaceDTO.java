@@ -1,6 +1,6 @@
 package com.example.boardTest.dto.place;
 
-import com.example.boardTest.entity.Place;
+import com.example.boardTest.entity.place.Place;
 import lombok.*;
 
 // 출력용 (view/응답)

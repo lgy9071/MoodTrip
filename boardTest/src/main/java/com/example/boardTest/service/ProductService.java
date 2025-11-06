@@ -1,8 +1,8 @@
 package com.example.boardTest.service;
 
-import com.example.boardTest.entity.Product;
+import com.example.boardTest.entity.product.Product;
 import com.example.boardTest.entity.User;
-import com.example.boardTest.repository.ProductRepository;
+import com.example.boardTest.repository.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

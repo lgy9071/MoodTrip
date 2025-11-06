@@ -3,7 +3,7 @@ package com.example.boardTest.service;
 import com.example.boardTest.entity.board.ContentType;
 import com.example.boardTest.entity.board.Post;
 import com.example.boardTest.entity.User;
-import com.example.boardTest.repository.PostRepository;
+import com.example.boardTest.repository.post.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

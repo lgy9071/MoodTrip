@@ -1,11 +1,11 @@
 package com.example.boardTest.service;
 
 import com.example.boardTest.dto.place.PlaceDTO;
-import com.example.boardTest.entity.Place;
-import com.example.boardTest.entity.PlaceFavorite;
+import com.example.boardTest.entity.place.Place;
+import com.example.boardTest.entity.place.PlaceFavorite;
 import com.example.boardTest.entity.User;
-import com.example.boardTest.repository.PlaceFavoriteRepository;
-import com.example.boardTest.repository.PlaceRepository;
+import com.example.boardTest.repository.place.PlaceFavoriteRepository;
+import com.example.boardTest.repository.place.PlaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

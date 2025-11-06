@@ -18,6 +18,12 @@ public class AuthController {
     private final UserService userService;
     public static final String LOGIN_USER = "LOGIN_USER";
 
+    @GetMapping("/")
+    public String home(HttpSession session, Model model){
+        model.addAttribute("user", session.getAttribute("LOGIN_USER"));
+        return "home/index";
+    }
+
     @GetMapping("/signup")
     public String signupForm() {
         return "signup";

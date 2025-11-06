@@ -1,7 +1,7 @@
 package com.example.boardTest.dto.trip;
 
 import com.example.boardTest.entity.Base;
-import com.example.boardTest.entity.TripPlan;
+import com.example.boardTest.entity.trip.TripPlan;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
