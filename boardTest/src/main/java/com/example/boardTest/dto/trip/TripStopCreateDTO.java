@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -25,5 +26,8 @@ public record TripStopCreateDTO(
         BigDecimal cost,
 
         @NotNull(message = "분류를 선택하세요.")
-        TripCostCategory category
+        TripCostCategory category,
+
+        String imageUrl,            // 저장된 이미지 경로(문자열)
+        MultipartFile image         // 업로드 파일
 ) {}

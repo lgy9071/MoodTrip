@@ -231,3 +231,20 @@ img{ max-width:100%; height:auto; }
   .hero{ padding: 48px 16px; }
   .hero__title{ font-size: 32px; }
 }
+
+.stop-card {
+  display:grid;
+  grid-template-columns: 80px 1fr 120px;
+  gap:10px;
+  padding:12px;
+  border:1px solid #eee;
+  border-radius:10px;
+  margin-top:10px;
+}
+.stop-card .span-2 { grid-column: span 2; }
+.stop-card .row { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+
+@media (max-width: 720px){
+  .stop-card { grid-template-columns: 1fr; }
+  .stop-card .row { grid-template-columns: 1fr; }
+}

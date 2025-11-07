@@ -15,8 +15,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -31,8 +38,8 @@ public class TripService {
 
     private final TripPlanRepository planRepo;
     private final TripStopRepository stopRepo;
+    private final Path root = Paths.get("uploads");
 
-    // Plan
     public Page<TripPlan> listPlans(int page, int size) {
         page = Math.max(0, page);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
@@ -80,6 +87,7 @@ public class TripService {
                 .memo(dto.memo())
                 .cost(dto.cost())
                 .category(dto.category())
+                .imageUrl(dto.imageUrl())
                 .build();
         return stopRepo.save(stop);
     }
@@ -123,7 +131,6 @@ public class TripService {
     }
 
     // 리뷰 작성용 메서드
-
     public List<TripSummaryDTO> findAllPlans() {
         List<TripPlan> plans = planRepo.findAll(Sort.by(Sort.Direction.DESC, "id"));
         return plans.stream()
@@ -133,5 +140,22 @@ public class TripService {
 
     public List<TripPlan> search(String keyword) {
         return planRepo.findByTitleContainingIgnoreCase(keyword);
+    }
+
+    // 이미지 업로드
+    public String saveTripImage(Long planId, MultipartFile file) {
+        if (file == null || file.isEmpty()) return null;
+        try {
+            Path dir = root.resolve("trips").resolve(String.valueOf(planId));
+            Files.createDirectories(dir);
+            String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path dest = dir.resolve(filename).normalize();
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
+            return "/uploads/trips/" + planId + "/" + filename; // 정적 리소스 매핑 필요
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 저장 실패", e);
+        }
     }
 }

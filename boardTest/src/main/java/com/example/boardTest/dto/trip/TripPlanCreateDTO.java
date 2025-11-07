@@ -1,5 +1,6 @@
 package com.example.boardTest.dto.trip;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,5 +37,16 @@ public class TripPlanCreateDTO {
     }
     public boolean hasInitialStop() {
         return initialPlaceName != null && !initialPlaceName.isBlank();
+    }
+
+    @AssertTrue(message = "경유지의 '일차'는 선택한 여행 기간 범위를 벗어날 수 없습니다.")
+    public boolean isStopsWithinRange() {
+        if (startDate == null || endDate == null || stops == null) return true;
+        long maxDays = ChronoUnit.DAYS.between(startDate, endDate) + 1; // 양끝 포함
+        for (NewStopDTO s : stops) {
+            if (s == null || s.getPlaceName() == null || s.getPlaceName().isBlank()) continue; // 빈 행 스킵
+            if (s.getDayOrder() == null || s.getDayOrder() < 1 || s.getDayOrder() > maxDays) return false;
+        }
+        return true;
     }
 }

@@ -4,6 +4,15 @@
     <meta charset="UTF-8"/>
     <title>여행 계획 등록</title>
     <link rel="stylesheet" th:href="@{/css/base.css}" />
+    <style>
+        .stop-card{ display:grid; grid-template-columns: 80px 1fr 120px; gap:10px; padding:12px; border:1px solid #eee; border-radius:10px; margin-top:10px; }
+        .stop-card .span-2{ grid-column: span 2; }
+        .stop-card .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+        @media (max-width: 720px){
+          .stop-card{ grid-template-columns: 1fr; }
+          .stop-card .row{ grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader('trips')}"></div>
@@ -11,7 +20,7 @@
 <main class="wrap">
     <h1>여행 계획 등록</h1>
 
-    <form th:action="@{/trips}" method="post" th:object="${form}">
+    <form th:action="@{/trips}" method="post" th:object="${form}" enctype="multipart/form-data">
         <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
 
         <div class="section grid" style="grid-template-columns: 1fr 1fr 1fr;">
@@ -41,20 +50,14 @@
                 </div>
             </div>
 
-            <!-- 헤더 라벨 -->
+            <!-- 초기 헤더 라벨 -->
             <div class="grid" style="grid-template-columns: 80px 1fr 160px 1fr 1fr 160px 120px; gap:8px; font-weight:600;">
-                <div>일차</div>
-                <div>장소명</div>
-                <div>비용(원)</div>
-                <div>주소(선택)</div>
-                <div>메모</div>
-                <div>분류</div>
-                <div>액션</div>
+                <div>일차</div><div>장소명</div><div>비용(원)</div><div>주소(선택)</div><div>메모</div><div>분류</div><div>액션</div>
             </div>
 
-            <!-- 실제 행들 -->
+            <!-- 서버 렌더 초기행 -->
             <div id="stops-container">
-                <div class="grid" th:each="s, iStat : *{stops}" style="grid-template-columns: 80px 1fr 160px 1fr 1fr 160px 120px; gap:8px; align-items:center;">
+                <div class="grid stop-row" th:each="s, iStat : *{stops}" style="grid-template-columns: 80px 1fr 160px 1fr 1fr 160px 120px; gap:8px; align-items:center;">
                     <input type="number" min="1" th:field="*{stops[__${iStat.index}__].dayOrder}" />
                     <input type="text" th:field="*{stops[__${iStat.index}__].placeName}" placeholder="예) 도톤보리"/>
                     <input type="number" step="0.01" min="0" th:field="*{stops[__${iStat.index}__].cost}" placeholder="예) 12000"/>
@@ -69,19 +72,43 @@
                 </div>
             </div>
 
-            <!-- 템플릿 행 -->
+            <!-- 동적 추가용 템플릿 (카드형 + 이미지 입력 포함) -->
             <template id="stop-template">
-                <div class="grid" style="grid-template-columns: 80px 1fr 160px 1fr 1fr 160px 120px; gap:8px; align-items:center;">
-                    <input type="number" min="1" name="stops[__idx__].dayOrder" value="1"/>
-                    <input type="text" name="stops[__idx__].placeName" placeholder="예) 도톤보리"/>
-                    <input type="number" step="0.01" min="0" name="stops[__idx__].cost" value="0"/>
-                    <input type="text" name="stops[__idx__].address" placeholder="예) 오사카부 오사카시…"/>
-                    <input type="text" name="stops[__idx__].memo" placeholder="추천 메뉴 등"/>
-                    <select name="stops[__idx__].category">
-                        <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
-                    </select>
+                <div class="stop-card stop-row">
                     <div>
-                        <button type="button" class="btn btn-danger" onclick="removeStop(this)">삭제</button>
+                        <label>일차</label>
+                        <input type="number" min="1" name="stops[__idx__].dayOrder" value="1"/>
+                    </div>
+                    <div class="span-2">
+                        <label>장소명</label>
+                        <input type="text" name="stops[__idx__].placeName" placeholder="예) 도톤보리"/>
+                    </div>
+                    <div>
+                        <label>비용(원)</label>
+                        <input type="number" step="0.01" min="0" name="stops[__idx__].cost" value="0"/>
+                    </div>
+                    <div>
+                        <label>분류</label>
+                        <select name="stops[__idx__].category">
+                            <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
+                        </select>
+                    </div>
+                    <div class="row span-2">
+                        <div>
+                            <label>주소(선택)</label>
+                            <input type="text" name="stops[__idx__].address" placeholder="예) 오사카부 오사카시…"/>
+                        </div>
+                        <div>
+                            <label>메모</label>
+                            <input type="text" name="stops[__idx__].memo" placeholder="추천 메뉴 등"/>
+                        </div>
+                    </div>
+                    <div class="span-2">
+                        <label>이미지</label>
+                        <input type="file" accept="image/*" name="stops[__idx__].image">
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-danger" onclick="removeStop(this)">행 삭제</button>
                     </div>
                 </div>
             </template>
@@ -101,16 +128,32 @@
       const tpl = document.getElementById('stop-template');
       const node = tpl.content.firstElementChild.cloneNode(true);
       node.querySelectorAll('input, select, textarea').forEach(el => {
-        el.name = el.name.replace('__idx__', String(stopIndex));
+        if (el.name) el.name = el.name.replace('__idx__', String(stopIndex));
       });
       document.getElementById('stops-container').appendChild(node);
       stopIndex++;
+      updateMaxDay(); // 날짜 변경범위 즉시 반영
     }
 
     function removeStop(btn) {
-      const row = btn.closest('.grid');
-      row.parentNode.removeChild(row);
+      const row = btn.closest('.stop-row'); // <- grid/카드 모두 제거 가능
+      if (row) row.remove();
     }
+
+    // 최대 일차 제한
+    function updateMaxDay() {
+      const s = document.querySelector('input[name="startDate"]')?.value;
+      const e = document.querySelector('input[name="endDate"]')?.value;
+      if (!s || !e) return;
+      const start = new Date(s), end = new Date(e);
+      const diff = Math.round((end - start) / (1000*60*60*24)) + 1;
+      const inputs = document.querySelectorAll('input[name^="stops["][name$="].dayOrder"]');
+      inputs.forEach(el => { el.min = 1; el.max = Math.max(1, diff); });
+    }
+    document.addEventListener('change', (e) => {
+      if (e.target.name === 'startDate' || e.target.name === 'endDate') updateMaxDay();
+    });
+    document.addEventListener('DOMContentLoaded', updateMaxDay);
 </script>
 
 <div th:replace="~{fragments/footer :: siteFooter}"></div>

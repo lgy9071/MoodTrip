@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
@@ -25,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import java.net.URLEncoder;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/trips")
@@ -51,20 +54,18 @@ public class TripController {
                           @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
 
         if (loginUser == null) {
-            // 로그인 후 다시 돌아올 위치를 next에 담아 전달
             String next = URLEncoder.encode("/trips/new", StandardCharsets.UTF_8);
             ra.addFlashAttribute("msg", "로그인이 필요합니다.");
             return "redirect:/login?next=" + next;
         }
 
-        TripPlanCreateDTO form = new TripPlanCreateDTO(); // 기본 생성자
+        TripPlanCreateDTO form = new TripPlanCreateDTO();
         form.setTitle("");
         form.setStartDate(LocalDate.now());
         form.setEndDate(LocalDate.now().plusDays(2));
-
-        // stops 기본 1행(빈 행) 제공
         if (form.getStops() == null) form.setStops(new ArrayList<>());
-        form.getStops().add(new NewStopDTO(1, "", null, null, BigDecimal.ZERO, TripCostCategory.OTHER));
+        // 초기 1행(빈)
+        form.getStops().add(new NewStopDTO(1, "", null, null, BigDecimal.ZERO, TripCostCategory.OTHER, null));
 
         model.addAttribute("form", form);
         model.addAttribute("categories", TripCostCategory.values());
@@ -75,7 +76,7 @@ public class TripController {
     public String create(@Valid @ModelAttribute("form") TripPlanCreateDTO form,
                          BindingResult br,
                          RedirectAttributes ra,
-                         Model model,   // 뷰로 돌려보낼 때 categories 재주입
+                         Model model,
                          @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
 
         if (loginUser == null) {
@@ -87,18 +88,23 @@ public class TripController {
             br.rejectValue("endDate", "dateRange", "종료일은 시작일 이후여야 합니다.");
         }
         if (br.hasErrors()) {
-            model.addAttribute("categories", TripCostCategory.values()); // 다시 넣어주기
+            model.addAttribute("categories", TripCostCategory.values());
             return "trips/new";
         }
 
         TripPlan plan = tripService.createPlan(
                 form.getTitle(), form.getStartDate(), form.getEndDate(), loginUser);
 
-        // 여러 경유지 저장 (getter 사용)
+        // 여러 경유지 저장 (이미지 포함)
         if (form.getStops() != null) {
             for (NewStopDTO s : form.getStops()) {
-                // 빈 행(장소명 비어있음)은 스킵
                 if (s.getPlaceName() == null || s.getPlaceName().isBlank()) continue;
+
+                String imageUrl = null;
+                MultipartFile image = s.getImage();
+                if (image != null && !image.isEmpty()) {
+                    imageUrl = tripService.saveTripImage(plan.getId(), image);
+                }
 
                 TripStopCreateDTO dto = new TripStopCreateDTO(
                         s.getDayOrder(),
@@ -106,7 +112,9 @@ public class TripController {
                         s.getAddress(),
                         s.getMemo(),
                         s.getCost() != null ? s.getCost() : BigDecimal.ZERO,
-                        s.getCategory() != null ? s.getCategory() : TripCostCategory.OTHER
+                        s.getCategory() != null ? s.getCategory() : TripCostCategory.OTHER,
+                        imageUrl,
+                        null
                 );
                 tripService.addStop(plan.getId(), dto, loginUser);
             }
@@ -131,7 +139,11 @@ public class TripController {
         boolean isOwner = (loginUser != null && plan.getOwner() != null &&
                 loginUser.getId().equals(plan.getOwner().getId()));
 
-        // 차트용 라벨/값 배열 (값을 Double로 보장하여 JS NaN 문제 방지)
+        Map<Integer, List<TripStop>> stopsByDay = stops.stream()
+                .collect(Collectors.groupingBy(TripStop::getDayOrder, TreeMap::new, Collectors.toList()));
+        model.addAttribute("stopsByDay", stopsByDay);
+
+        // 차트용 값은 JS에서 NaN 방지 위해 Double로
         List<String> catLabels = new ArrayList<>();
         List<Double> catValues = new ArrayList<>();
         for (TripCostCategory c : TripCostCategory.values()) {
@@ -150,12 +162,11 @@ public class TripController {
         model.addAttribute("plan", plan);
         model.addAttribute("stops", stops);
         model.addAttribute("stopForm",
-                new TripStopCreateDTO(1, "", "", "", BigDecimal.ZERO, TripCostCategory.OTHER));
+                           new TripStopCreateDTO(1, "", "", "", BigDecimal.ZERO, TripCostCategory.OTHER, null, null));
         model.addAttribute("totalCost", totalCost);
         model.addAttribute("dayCost", dayCost);
         model.addAttribute("isOwner", isOwner);
 
-        // 카테고리 셀렉트 옵션 & 차트 데이터
         model.addAttribute("categories", TripCostCategory.values());
         model.addAttribute("catLabels", catLabels);
         model.addAttribute("catValues", catValues);
@@ -180,10 +191,29 @@ public class TripController {
             TripPlan plan = tripService.findPlan(id);
             model.addAttribute("plan", plan);
             model.addAttribute("stops", tripService.getStops(id));
+            model.addAttribute("categories", TripCostCategory.values());
             return "trips/detail";
         }
 
-        tripService.addStop(id, dto, loginUser);
+        // 이미지 저장
+        String imageUrl = null;
+        if (dto.image() != null && !dto.image().isEmpty()) {
+            imageUrl = tripService.saveTripImage(id, dto.image());
+        }
+
+        // imageUrl 주입해서 다시 DTO 구성
+        TripStopCreateDTO withUrl = new TripStopCreateDTO(
+                dto.dayOrder(),
+                dto.placeName(),
+                dto.address(),
+                dto.memo(),
+                dto.cost(),
+                dto.category(),
+                imageUrl,
+                null
+        );
+
+        tripService.addStop(id, withUrl, loginUser);
         ra.addFlashAttribute("msg", "경유지를 추가했습니다.");
         return "redirect:/trips/{id}";
     }
@@ -202,7 +232,4 @@ public class TripController {
         ra.addFlashAttribute("msg", "여행 계획을 삭제했습니다.");
         return "redirect:/trips";
     }
-
-    // (선택) 상세 화면의 "수정" 모달을 실제 저장하려면 PUT 엔드포인트도 구현 필요
-    // @PutMapping("/stops/{stopId}") ...
 }

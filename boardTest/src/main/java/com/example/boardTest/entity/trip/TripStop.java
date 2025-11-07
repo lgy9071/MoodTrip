@@ -45,4 +45,7 @@ public class TripStop {
     @Column(length = 20, nullable = false)
     @Builder.Default
     private TripCostCategory category = TripCostCategory.OTHER;
+
+    @Column(length=300)
+    private String imageUrl; // 업로드 저장경로(or S3 URL 등)
 }
