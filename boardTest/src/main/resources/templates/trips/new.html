@@ -39,6 +39,23 @@
                 <input type="date" th:field="*{endDate}"/>
                 <div class="err" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
             </div>
+            <div class="section grid" style="grid-template-columns: 1fr 1fr 1fr 160px; gap:10px; align-items:end;">
+                <div class="form-row">
+                    <label>도시(선택)</label>
+                    <input type="text" id="ai-city" placeholder="예) Osaka">
+                </div>
+                <div class="form-row">
+                    <label>테마(선택)</label>
+                    <input type="text" id="ai-theme" placeholder="예) food / night-view / history">
+                </div>
+                <div class="form-row">
+                    <label>일일 예산(원, 선택)</label>
+                    <input type="number" id="ai-budget" min="0" placeholder="예) 80000">
+                </div>
+                <div>
+                    <button type="button" class="btn" onclick="fillByAi()">AI로 자동 채움</button>
+                </div>
+            </div>
         </div>
 
         <div class="section">
@@ -154,8 +171,57 @@
       if (e.target.name === 'startDate' || e.target.name === 'endDate') updateMaxDay();
     });
     document.addEventListener('DOMContentLoaded', updateMaxDay);
-</script>
 
+    // AI 추천 기능용 ======================================
+    async function fillByAi(){
+      // 폼의 기간 읽기
+      const s = document.querySelector('input[name="startDate"]')?.value;
+      const e = document.querySelector('input[name="endDate"]')?.value;
+      if (!s || !e) { alert('시작일과 종료일을 먼저 선택하세요.'); return; }
+
+      const body = {
+        startDate: s,
+        endDate: e,
+        city: document.getElementById('ai-city').value || null,
+        theme: document.getElementById('ai-theme').value || null,
+        budgetPerDay: (document.getElementById('ai-budget').value || '').trim() === '' ? null : Number(document.getElementById('ai-budget').value)
+      };
+
+      try {
+        const res = await fetch('/api/ai/trips/suggest-stops', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With':'XMLHttpRequest' },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+          const msg = await res.text();
+          throw new Error(msg || '추천 요청 실패');
+        }
+        const items = await res.json();
+        if (!Array.isArray(items) || items.length === 0) {
+          alert('추천 결과가 없습니다.');
+          return;
+        }
+        // 추천을 폼의 stops[]에 삽입
+        for (const it of items) {
+          addStop(); // 기존에 제공한 addStop() 사용
+          const idx = stopIndex - 1; // 방금 추가된 행의 index
+          const base = `stops[${idx}]`;
+          document.querySelector(`input[name="${base}.dayOrder"]`).value = it.dayOrder ?? 1;
+          document.querySelector(`input[name="${base}.placeName"]`).value = it.placeName ?? '';
+          document.querySelector(`input[name="${base}.address"]`).value = it.address ?? '';
+          document.querySelector(`input[name="${base}.memo"]`).value = it.memo ?? '';
+          document.querySelector(`input[name="${base}.cost"]`).value = (it.cost ?? 0);
+          const sel = document.querySelector(`select[name="${base}.category"]`);
+          if (sel && it.category) sel.value = it.category; // TripCostCategory 문자열
+        }
+        updateMaxDay();
+      } catch (e) {
+        console.error(e);
+        alert('AI 자동 채움 중 오류가 발생했습니다.');
+      }
+    }
+</script>
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
 </body>
 </html>

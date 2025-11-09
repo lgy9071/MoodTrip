@@ -1,7 +1,7 @@
 package com.example.boardTest.controller.trip;
 
 import com.example.boardTest.entity.User;
-import com.example.boardTest.service.TripService;
+import com.example.boardTest.service.trip.TripService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

@@ -7,7 +7,7 @@ import com.example.boardTest.dto.trip.TripStopCreateDTO;
 import com.example.boardTest.entity.trip.TripPlan;
 import com.example.boardTest.entity.trip.TripStop;
 import com.example.boardTest.entity.User;
-import com.example.boardTest.service.TripService;
+import com.example.boardTest.service.trip.TripService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

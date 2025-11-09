@@ -8,7 +8,7 @@ import com.example.boardTest.entity.User;
 import com.example.boardTest.service.PlaceService;
 import com.example.boardTest.service.PostService;
 import com.example.boardTest.service.review.ReviewService;
-import com.example.boardTest.service.TripService;
+import com.example.boardTest.service.trip.TripService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

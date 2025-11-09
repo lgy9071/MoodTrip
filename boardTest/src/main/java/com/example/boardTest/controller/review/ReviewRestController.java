@@ -2,7 +2,7 @@ package com.example.boardTest.controller.review;
 
 import com.example.boardTest.service.PlaceService;
 import com.example.boardTest.service.PostService;
-import com.example.boardTest.service.TripService;
+import com.example.boardTest.service.trip.TripService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

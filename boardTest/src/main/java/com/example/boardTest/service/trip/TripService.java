@@ -1,4 +1,4 @@
-package com.example.boardTest.service;
+package com.example.boardTest.service.trip;
 
 import com.example.boardTest.domain.trip.TripCostCategory;
 import com.example.boardTest.dto.trip.TripStopCreateDTO;
