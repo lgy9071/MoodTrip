@@ -6,16 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@RequiredArgsConstructor
 public class OpenAiConfig {
-
-    @Value("${openai.apiKey}")
-    private String apiKey; // 환경변수 → yml → 여기로
 
     @Bean
     public com.openai.client.OpenAIClient openAIClient() {
-        return com.openai.client.okhttp.OpenAIOkHttpClient.builder()
-                .apiKey(apiKey)
-                .build();
+        // 환경변수(OPENAI_API_KEY)를 자동으로 읽어 초기화
+        return com.openai.client.okhttp.OpenAIOkHttpClient.fromEnv();
     }
 }
