@@ -15,6 +15,7 @@ public class PlaceDTO {
     private String category;
     private String address;
     private Integer rating;
+    private String imageUrl;
 
     public static PlaceDTO fromEntity(Place place) {
         return PlaceDTO.builder()
@@ -23,6 +24,7 @@ public class PlaceDTO {
                 .category(place.getCategory())
                 .address(place.getAddress())
                 .rating(place.getRating())
+                .imageUrl(place.getImageUrl())
                 .build();
     }
 }
