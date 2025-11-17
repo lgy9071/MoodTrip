@@ -6,6 +6,9 @@ import com.example.boardTest.dto.trip.SuggestedStopDTO;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -18,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TripAiSuggestService {
 
+    private static final Logger log = LoggerFactory.getLogger(TripAiSuggestService.class);
     private final com.openai.client.OpenAIClient openAi;
     private final ObjectMapper om = new ObjectMapper()
             .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -61,10 +65,10 @@ public class TripAiSuggestService {
 
             // 3) SDK 버전 차이를 흡수하는 안전 추출
             String text = safeExtractText(resp);
-
+            log.debug("AI raw text: {}", text);
             // 4) 혹시 코드블록/설명 섞여도 JSON 배열만 뽑아내기
             String json = stripToJsonArray(text);
-
+            log.debug("AI json {}", json);
             // 5) JSON → DTO
             List<SuggestedStopDTO> raw = parseJson(json);
 
@@ -73,6 +77,7 @@ public class TripAiSuggestService {
 
         } catch (Exception e) {
             // 실패 시 더미로 폴백
+            log.warn("AI suggest failed, fallback, reason={}", e.toString());
             return fallbackRules(req);
         }
     }

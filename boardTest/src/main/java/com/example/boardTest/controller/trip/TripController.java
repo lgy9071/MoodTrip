@@ -209,7 +209,7 @@ public class TripController {
                 dto.memo(),
                 dto.cost(),
                 dto.category(),
-                imageUrl,
+                dto.imageUrl(),
                 null
         );
 
