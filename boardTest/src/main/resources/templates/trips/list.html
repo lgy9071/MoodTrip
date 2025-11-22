@@ -9,49 +9,54 @@
 <div th:replace="~{fragments/header :: siteHeader('trips')}"></div>
 
 <main class="wrap">
-    <div class="top">
+
+    <div class="page-header">
         <h1>여행 계획</h1>
+        <a class="btn btn-primary"
+           th:if="${session.LOGIN_USER == null}"
+           href="#" onclick="openLoginModal(event)">+ 새 계획</a>
 
-        <!-- 비로그인: 모달 안내 후 이동 -->
-        <a class="btn btn-primary" th:if="${session.LOGIN_USER == null}" href="#" onclick="openLoginModal(event)">+ 새 계획</a>
-
-        <!-- 로그인 상태 -->
-        <a class="btn btn-primary" th:if="${session.LOGIN_USER != null}" th:href="@{/trips/new}">+ 새 계획</a>
+        <a class="btn btn-primary"
+           th:if="${session.LOGIN_USER != null}"
+           th:href="@{/trips/new}">+ 새 계획</a>
     </div>
 
-    <div th:if="${msg}" class="msg" th:text="${msg}"></div>
-    <div th:if="${error}" class="msg" style="background:#ffecec;border-color:#ffb4b4;color:#a40000" th:text="${error}"></div>
+    <div th:if="${msg}" class="alert success" th:text="${msg}"></div>
+    <div th:if="${error}" class="alert danger" th:text="${error}"></div>
 
-    <table>
-        <thead>
-        <tr>
-            <th>#</th>
-            <th>제목</th>
-            <th>기간</th>
-            <th>작성자</th>
-            <th>작성일</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="p, i : ${plans.content}">
-            <td th:text="${i.count}"></td>
-            <td><a th:href="@{|/trips/${p.id}|}" th:text="${p.title}"></a></td>
-            <td th:text="${p.startDate} + ' ~ ' + ${p.endDate}"></td>
-            <td th:text="${p.owner != null && p.owner.name != null ? p.owner.name : (p.owner != null ? p.owner.username : '-')}"></td>
-            <td th:text="${p.createdAt != null ? #temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
-        </tr>
-        <tr th:if="${plans.content.size()==0}">
-            <td colspan="5" class="muted" style="text-align:center;">등록된 여행 계획이 없습니다.</td>
-        </tr>
-        </tbody>
-    </table>
+    <section class="trip-list">
+        <div class="trip-card" th:each="p : ${plans.content}">
+            <div class="trip-card__title">
+                <a th:text="${p.title}" th:href="@{|/trips/${p.id}|}"></a>
+            </div>
+
+            <div class="trip-card__meta">
+                <span>📅 기간: <b th:text="${p.startDate} + ' ~ ' + ${p.endDate}"></b></span>
+                <span>👤 작성자:
+                    <b th:text="${p.owner != null ? p.owner.name : '알 수 없음'}"></b>
+                </span>
+                <span>🕒 작성일:
+                    <b th:text="${#temporals.format(p.createdAt,'yyyy-MM-dd HH:mm')}"></b>
+                </span>
+            </div>
+        </div>
+
+        <div th:if="${plans.content.size()==0}" class="empty">
+            등록된 여행 계획이 없습니다.
+        </div>
+    </section>
 
     <div class="pagination">
-        <a class="btn" th:if="${!plans.first}" th:href="@{/trips(page=${plans.number-1}, size=${plans.size})}">이전</a>
-        <span th:text="${plans.number + 1} + ' / ' + ${plans.totalPages}">1 / 1</span>
-        <a class="btn" th:if="${!plans.last}" th:href="@{/trips(page=${plans.number+1}, size=${plans.size})}">다음</a>
+        <a class="btn" th:if="${!plans.first}"
+           th:href="@{/trips(page=${plans.number-1})}">이전</a>
+
+        <span th:text="${plans.number+1} + ' / ' + ${plans.totalPages}"></span>
+
+        <a class="btn" th:if="${!plans.last}"
+           th:href="@{/trips(page=${plans.number+1})}">다음</a>
     </div>
 </main>
+
 
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
 
