@@ -300,3 +300,78 @@ img{ max-width:100%; height:auto; }
   padding:16px;
   border-radius:10px;
 }
+
+/* --- Booking 스타일 카드 --- */
+.bk-card {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 20px;
+  background: #fff;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* 섹션 타이틀 */
+.bk-section-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+
+/* 경유지 카드 */
+.bk-stop {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 18px;
+  margin-bottom: 14px;
+  display: flex;
+  gap: 18px;
+  background: #fbfbfb;
+}
+
+/* 오른쪽 컨텐츠 영역 */
+.bk-stop-content {
+  flex: 1;
+}
+
+/* 이미지 오른쪽 정렬 */
+.bk-stop img {
+  width: 150px;
+  height: 120px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+/* 총 비용 박스 */
+.bk-summary {
+  background: #eef7ff;
+  border: 1px solid #cce0ff;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 18px;
+}
+
+/* 필드 라벨 */
+.bk-label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* 인풋 카드 */
+.bk-form-card {
+  border: 1px solid #dadada;
+  padding: 16px;
+  background: #fff;
+  border-radius: 6px;
+}
+
+/* Booking 스타일 버튼 */
+.btn-primary {
+  background: #0058a3 !important;
+}
+.btn-primary:hover {
+  background: #004c91 !important;
+}
+

@@ -4,59 +4,137 @@
     <meta charset="UTF-8"/>
     <title>여행 계획 목록</title>
     <link rel="stylesheet" th:href="@{/css/base.css}" />
+
+    <style>
+        body { background:#f5f6f7; }
+
+        /* 상단 헤더 박스 */
+        .bk-header-box {
+            background:#fff;
+            padding:26px;
+            border-radius:6px;
+            border:1px solid #d9d9d9;
+            box-shadow:0 1px 3px rgba(0,0,0,0.08);
+            margin-bottom:26px;
+        }
+        .bk-header-box h1 {
+            font-size:26px;
+            font-weight:700;
+        }
+
+        /* 여행 카드 (호텔 리스트 카드 느낌) */
+        .bk-trip-list {
+            display:grid;
+            gap:20px;
+        }
+        .bk-trip-card {
+            background:#fff;
+            border-radius:6px;
+            border:1px solid #e0e0e0;
+            padding:20px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            box-shadow:0 1px 3px rgba(0,0,0,0.05);
+        }
+        .bk-trip-info{
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+        }
+        .bk-trip-title{
+            font-size:20px;
+            font-weight:700;
+        }
+        .bk-trip-meta{
+            color:#666;
+            font-size:14px;
+        }
+
+        .btn-primary { background:#0058a3!important; color:white; }
+        .btn-primary:hover { background:#004c8d!important; }
+
+        /* 페이지네이션 */
+        .pagination {
+            margin-top:30px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:12px;
+        }
+    </style>
 </head>
+
 <body>
 <div th:replace="~{fragments/header :: siteHeader('trips')}"></div>
 
 <main class="wrap">
 
-    <div class="page-header">
-        <h1>여행 계획</h1>
-        <a class="btn btn-primary"
-           th:if="${session.LOGIN_USER == null}"
-           href="#" onclick="openLoginModal(event)">+ 새 계획</a>
+    <!-- 상단 -->
+    <div class="bk-header-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1>여행 계획 목록</h1>
 
-        <a class="btn btn-primary"
-           th:if="${session.LOGIN_USER != null}"
-           th:href="@{/trips/new}">+ 새 계획</a>
+            <a class="btn btn-primary"
+               th:if="${session.LOGIN_USER != null}"
+               th:href="@{/trips/new}">+ 새 여행 만들기</a>
+
+            <a class="btn btn-primary"
+               th:if="${session.LOGIN_USER == null}"
+               href="#" onclick="openLoginModal(event)">+ 새 여행 만들기</a>
+        </div>
     </div>
 
     <div th:if="${msg}" class="alert success" th:text="${msg}"></div>
     <div th:if="${error}" class="alert danger" th:text="${error}"></div>
 
-    <section class="trip-list">
-        <div class="trip-card" th:each="p : ${plans.content}">
-            <div class="trip-card__title">
-                <a th:text="${p.title}" th:href="@{|/trips/${p.id}|}"></a>
+    <!-- 여행 카드 리스트 -->
+    <section class="bk-trip-list">
+        <div class="bk-trip-card" th:each="p : ${plans.content}">
+            <div class="bk-trip-info">
+                <div class="bk-trip-title">
+                    <a th:text="${p.title}" th:href="@{|/trips/${p.id}|}"></a>
+                </div>
+
+                <div class="bk-trip-meta">
+                    기간: <b th:text="${p.startDate}"></b> ~ <b th:text="${p.endDate}"></b>
+                </div>
+
+                <div class="bk-trip-meta">
+                    작성자:
+                    <b th:text="${p.owner != null ? p.owner.name : '알 수 없음'}"></b>
+                </div>
+
+                <div class="bk-trip-meta">
+                    작성일:
+                    <b th:text="${#temporals.format(p.createdAt,'yyyy-MM-dd HH:mm')}"></b>
+                </div>
             </div>
 
-            <div class="trip-card__meta">
-                <span>📅 기간: <b th:text="${p.startDate} + ' ~ ' + ${p.endDate}"></b></span>
-                <span>👤 작성자:
-                    <b th:text="${p.owner != null ? p.owner.name : '알 수 없음'}"></b>
-                </span>
-                <span>🕒 작성일:
-                    <b th:text="${#temporals.format(p.createdAt,'yyyy-MM-dd HH:mm')}"></b>
-                </span>
+            <div>
+                <a class="btn btn-primary"
+                   th:href="@{|/trips/${p.id}|}">상세 보기</a>
             </div>
         </div>
 
-        <div th:if="${plans.content.size()==0}" class="empty">
+        <div th:if="${plans.content.size()==0}" class="empty" style="text-align:center; padding:40px;">
             등록된 여행 계획이 없습니다.
         </div>
     </section>
 
+    <!-- 페이지네이션 -->
     <div class="pagination">
-        <a class="btn" th:if="${!plans.first}"
+        <a class="btn"
+           th:if="${!plans.first}"
            th:href="@{/trips(page=${plans.number-1})}">이전</a>
 
         <span th:text="${plans.number+1} + ' / ' + ${plans.totalPages}"></span>
 
-        <a class="btn" th:if="${!plans.last}"
+        <a class="btn"
+           th:if="${!plans.last}"
            th:href="@{/trips(page=${plans.number+1})}">다음</a>
     </div>
 </main>
-
 
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
 
@@ -64,12 +142,6 @@
 <script>
     function openLoginModal(e) {
       e.preventDefault();
-      if (typeof Swal === 'undefined') {
-        if (confirm('로그인이 필요합니다.\n로그인하시겠습니까?')) {
-          window.location.href = '/login?next=/trips/new';
-        }
-        return;
-      }
       Swal.fire({
         title: '로그인이 필요합니다',
         text: '로그인하시겠습니까?',
@@ -77,12 +149,11 @@
         showCancelButton: true,
         confirmButtonText: '로그인하기',
         cancelButtonText: '취소',
-        reverseButtons: true,
-        focusConfirm: false
       }).then((r) => {
         if (r.isConfirmed) window.location.href = '/login?next=/trips/new';
       });
     }
 </script>
+
 </body>
 </html>
