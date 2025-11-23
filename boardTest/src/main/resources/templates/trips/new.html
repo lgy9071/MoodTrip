@@ -111,6 +111,11 @@
                     <label>종료일</label>
                     <input type="date" th:field="*{endDate}"/>
                 </div>
+
+                <div class="bk-row">
+                    <label>대표 이미지</label>
+                    <input type="file" name="thumbnail" accept="image/*"/>
+                </div>
             </div>
 
             <!-- AI 자동 채움 영역 -->
@@ -161,7 +166,7 @@
                         <select th:field="*{stops[__${iStat.index}__].category}">
                             <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
                         </select>
-
+                        <input type="file" th:field="*{stops[__${iStat.index}__].image}" accept="image/*"/>
                         <button type="button" class="btn btn-danger" onclick="removeStop(this)">삭제</button>
                     </div>
                 </div>
@@ -193,8 +198,9 @@
         <input type="text" name="stops[${stopIndex}].address"/>
         <input type="text" name="stops[${stopIndex}].memo"/>
         <select name="stops[${stopIndex}].category">
-            ${/*[[${#lists.join(categories, '')}]]*/''}
+            ${categories.map(c => `<option value="${c}">${c}</option>`).join("")}
         </select>
+        <input type="file" name="stops[${stopIndex}].image" accept="image/*"/>
         <button type="button" class="btn btn-danger" onclick="removeStop(this)">삭제</button>
       `;
 
@@ -250,6 +256,9 @@
         alert("AI 추천 오류");
       }
     }
+
+    <!-- 경유지 추가 -->
+    const categories = /*[[${categories}]]*/ [];
 </script>
 
 <div th:replace="~{fragments/footer :: siteFooter}"></div>

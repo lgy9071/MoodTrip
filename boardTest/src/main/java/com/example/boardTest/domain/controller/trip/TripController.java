@@ -74,6 +74,7 @@ public class TripController {
 
     @PostMapping
     public String create(@Valid @ModelAttribute("form") TripPlanCreateDTO form,
+                         @RequestParam("thumbnail") MultipartFile multipartFile,
                          BindingResult br,
                          RedirectAttributes ra,
                          Model model,
@@ -95,6 +96,11 @@ public class TripController {
         TripPlan plan = tripService.createPlan(
                 form.getTitle(), form.getStartDate(), form.getEndDate(), loginUser);
 
+        if (multipartFile != null && !multipartFile.isEmpty()) {
+            String thumbUrl = tripService.saveTripImage(plan.getId(), multipartFile);
+            plan.setThumbnailUrl(thumbUrl);
+        }
+
         // 여러 경유지 저장 (이미지 포함)
         if (form.getStops() != null) {
             for (NewStopDTO s : form.getStops()) {
@@ -114,7 +120,7 @@ public class TripController {
                         s.getCost() != null ? s.getCost() : BigDecimal.ZERO,
                         s.getCategory() != null ? s.getCategory() : TripCostCategory.OTHER,
                         imageUrl,
-                        null
+                        s.getImage() // multipartFile 전달
                 );
                 tripService.addStop(plan.getId(), dto, loginUser);
             }
@@ -209,7 +215,7 @@ public class TripController {
                 dto.memo(),
                 dto.cost(),
                 dto.category(),
-                dto.imageUrl(),
+                imageUrl,
                 null
         );
 

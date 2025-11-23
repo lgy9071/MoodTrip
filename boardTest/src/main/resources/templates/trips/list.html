@@ -89,36 +89,39 @@
     <div th:if="${error}" class="alert danger" th:text="${error}"></div>
 
     <!-- 여행 카드 리스트 -->
-    <section class="bk-trip-list">
-        <div class="bk-trip-card" th:each="p : ${plans.content}">
-            <div class="bk-trip-info">
-                <div class="bk-trip-title">
-                    <a th:text="${p.title}" th:href="@{|/trips/${p.id}|}"></a>
-                </div>
+    <section class="card-container">
+        <div class="card" th:each="p : ${plans.content}">
+            <img th:if="${p.thumbnailUrl}"
+                 th:src="${p.thumbnailUrl}"
+                 class="card-img"
+                 alt="대표 이미지"/>
 
-                <div class="bk-trip-meta">
-                    기간: <b th:text="${p.startDate}"></b> ~ <b th:text="${p.endDate}"></b>
-                </div>
+            <div class="card-body">
 
-                <div class="bk-trip-meta">
-                    작성자:
-                    <b th:text="${p.owner != null ? p.owner.name : '알 수 없음'}"></b>
-                </div>
+                <h3>
+                    <a th:href="@{|/trips/${p.id}|}" th:text="${p.title}"></a>
+                </h3>
 
-                <div class="bk-trip-meta">
-                    작성일:
-                    <b th:text="${#temporals.format(p.createdAt,'yyyy-MM-dd HH:mm')}"></b>
-                </div>
-            </div>
+                <p>
+                    <span th:text="${p.startDate}"></span> ~
+                    <span th:text="${p.endDate}"></span>
+                </p>
 
-            <div>
+                <p th:text="${p.owner != null ? p.owner.name : '알 수 없음'}"></p>
+
+                <p>
+                    <span th:text="${#temporals.format(p.createdAt,'yyyy-MM-dd HH:mm')}"></span>
+                </p>
+
                 <a class="btn btn-primary"
-                   th:href="@{|/trips/${p.id}|}">상세 보기</a>
+                   th:href="@{|/trips/${p.id}|}">
+                    상세보기
+                </a>
             </div>
-        </div>
 
-        <div th:if="${plans.content.size()==0}" class="empty" style="text-align:center; padding:40px;">
-            등록된 여행 계획이 없습니다.
+            <div th:if="${plans.content.size()==0}" class="empty" style="text-align:center; padding:40px;">
+                등록된 여행 계획이 없습니다.
+            </div>
         </div>
     </section>
 

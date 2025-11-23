@@ -43,4 +43,6 @@ public class TripPlan {
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    String thumbnailUrl;
 }
