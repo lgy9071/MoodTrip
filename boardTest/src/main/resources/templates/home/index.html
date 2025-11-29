@@ -5,7 +5,16 @@
     <title>메인 화면</title>
     <link rel="stylesheet" th:href="@{/css/base.css}" />
 </head>
-<body>
+<body class="has-forest-bg">
+<div class="bg-scene" aria-hidden="true">
+    <!-- 반짝이는 별들 -->
+    <div class="bg-stars bg-stars--1"></div>
+    <div class="bg-stars bg-stars--2"></div>
+
+    <!-- 숲 실루엣 (뒤쪽 / 앞쪽 레이어) -->
+    <div class="bg-forest bg-forest--back"></div>
+    <div class="bg-forest bg-forest--front"></div>
+</div>
 <div th:replace="~{fragments/header :: siteHeader('home')}"></div>
 
 <main id="home" class="home-main wrap">
