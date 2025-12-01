@@ -22,15 +22,15 @@
 
         <!-- 우측: 로그인/언어 -->
         <div class="header-ops">
-      <span th:if="${session.LOGIN_USER == null}">
-        <a href="/login"  th:text="#{auth.login}">로그인</a>
-        <a href="/signup" th:text="#{auth.signup}">회원가입</a>
-      </span>
+            <span th:if="${session.LOGIN_USER == null}">
+                <a href="/login"  th:text="#{auth.login}">로그인</a>
+                <a href="/signup" th:text="#{auth.signup}">회원가입</a>
+            </span>
             <span th:if="${session.LOGIN_USER != null}">
-        <form th:action="@{/logout}" method="post" style="display:inline">
-          <button type="submit" class="btn btn-primary" th:text="#{auth.logout}">로그아웃</button>
-        </form>
-      </span>
+                <form th:action="@{/logout}" method="post" style="display:inline">
+                    <button type="submit" class="btn btn-primary" th:text="#{auth.logout}">로그아웃</button>
+                </form>
+            </span>
 
             <div class="lang-dropdown">
                 <button class="lang-toggle">
@@ -48,8 +48,8 @@
     <div th:if="${param.loggedOut}" class="wrap msg">
         정상적으로 로그아웃되었습니다.
     </div>
-</header>
 
+    <!-- header 전용 최소 스타일(공통 base.css 기준으로 가볍게 보정만) -->
     <style>
         header a { color:#333; text-decoration:none; padding:6px 8px; border-radius:6px }
         header a.active { background:#1976d2; color:#fff }
@@ -58,7 +58,7 @@
         /* 언어 드롭다운 */
         .lang-dropdown {
           position:relative;
-          display:inline-block; /* hover 범위 안정화 */
+          display:inline-block;
         }
         .lang-toggle {
           background:transparent;
@@ -68,15 +68,15 @@
           font-size:12px;
           cursor:pointer;
           color:#444;
-          line-height:1;           /* 라인박스 여백 최소화 */
+          line-height:1;
         }
         .lang-toggle:hover { background:#f8f9fa; }
 
         .lang-menu {
           position:absolute;
           right:0;
-          top:100%;                /* 버튼 바로 아래에 ‘밀착’ */
-          margin-top:0;            /* 간격 제거 */
+          top:100%;
+          margin-top:0;
           background:#fff;
           border:1px solid #ddd;
           border-radius:6px;
@@ -84,8 +84,7 @@
           z-index:10;
           min-width:70px;
 
-          /* 초기엔 숨김 + 슬라이드다운 애니메이션 준비 */
-          display:block;           /* 트랜지션 위해 block 유지 */
+          display:block;
           opacity:0;
           visibility:hidden;
           transform:translateY(-6px) scaleY(.98);
@@ -93,7 +92,7 @@
           transition:
             opacity .18s ease,
             transform .18s ease,
-            visibility 0s linear .18s; /* 닫힐 때만 지연 */
+            visibility 0s linear .18s;
         }
         .lang-menu a {
           display:block;
@@ -106,7 +105,6 @@
         .lang-menu a:hover { background:#f1f5f9; }
         .lang-menu a.active { background:#1976d2; color:#fff; }
 
-        /* hover 또는 키보드 포커스로 열기 */
         .lang-dropdown:hover .lang-menu,
         .lang-dropdown:focus-within .lang-menu {
           opacity:1;
@@ -115,16 +113,15 @@
           transition:
             opacity .18s ease,
             transform .18s ease,
-            visibility 0s; /* 열릴 때 즉시 보이기 */
+            visibility 0s;
         }
 
-        /* 혹시 모를 1~2px 끊김 방지용(투명 히트존) - 필요 없으면 제거해도 됨 */
         .lang-dropdown::after {
           content:"";
           position:absolute;
           left:0; right:0;
           top:100%;
-          height:2px;              /* 시각적 공간은 0, hover만 이어줌 */
+          height:2px;
         }
     </style>
 </header>

@@ -232,6 +232,7 @@ img{ max-width:100%; height:auto; }
   .hero__title{ font-size: 32px; }
 }
 
+/* stop-card */
 .stop-card {
   display:grid;
   grid-template-columns: 80px 1fr 120px;
@@ -374,14 +375,15 @@ img{ max-width:100%; height:auto; }
 .btn-primary:hover {
   background: #004c91 !important;
 }
+
 /* ==========================================
-   Premium Forest + Starry Sky Background
+   Morning Forest Background
    ========================================== */
 
-/* 이 페이지에서만 다크 톤 텍스트 컬러 적용 */
+/* 이 페이지에서만(메인) 아침 숲 느낌 적용 */
 .has-forest-bg {
   position: relative;
-  color: #e5e7eb; /* 기본 텍스트: 밝은 회색 */
+  color: #111827;
 }
 
 /* 전체 배경 컨테이너 */
@@ -390,104 +392,54 @@ img{ max-width:100%; height:auto; }
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  /* 깊이감 있는 밤하늘 + 좌/우 그라데이션 */
-  background:
-    radial-gradient(circle at 0% 0%, rgba(56,189,248,0.22) 0, transparent 55%),
-    radial-gradient(circle at 100% 0%, rgba(74,222,128,0.22) 0, transparent 55%),
-    linear-gradient(180deg, #020617 0%, #020617 55%, #020617 100%);
+  background: #0b1120; /* 사진 로딩 전 딥그린/남색 */
 }
 
-/* 하단에 초록 숲 느낌의 그라데이션 밴드 */
+/* 실제 숲 사진 레이어
+   - 실제 파일 경로에 맞게 url()만 교체해 주세요. */
+.bg-forest {
+  position: absolute;
+  inset: -20px;
+  background-image: url("/images/background/forest-morning.jpg");
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.05);
+  filter: brightness(1.05) contrast(1.02) saturate(1.1);
+}
+
+/* 뒷 레이어: 살짝 블러 + 더 밝게 */
+.bg-forest--back {
+  opacity: 0.92;
+  filter: blur(1.5px) brightness(1.12) contrast(1.02) saturate(1.1);
+}
+
+/* 앞 레이어: 연무+햇살 느낌 오버레이 */
+.bg-forest--front {
+  mix-blend-mode: soft-light;
+  opacity: 0.85;
+}
+
+/* 안개 / 햇살 느낌 전체 오버레이 */
 .bg-scene::after {
   content: "";
   position: absolute;
-  left: -10vw;
-  right: -10vw;
-  bottom: -5vh;
-  height: 38vh;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(22,163,74,0.65) 0%, transparent 55%),
-    linear-gradient(to top, #022c22 0%, #064e3b 40%, transparent 100%);
-  opacity: 0.95;
-  filter: blur(4px);
-}
-
-/* 별 레이어 공통 */
-.bg-stars {
-  position: absolute;
   inset: 0;
+  background:
+    radial-gradient(circle at 5% 10%, rgba(255, 255, 255, 0.9) 0, transparent 55%),
+    radial-gradient(circle at 40% 0%, rgba(254, 243, 199, 0.85) 0, transparent 60%),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.85) 0%, rgba(241, 245, 249, 0.4) 40%, rgba(15, 23, 42, 0.0) 100%);
   pointer-events: none;
 }
 
-/* 소형 별 레이어 */
-.bg-stars--1::before {
-  content: "";
-  position: absolute;
-  top: 8%;
-  left: 12%;
-  width: 2px;
-  height: 2px;
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow:
-      0 0 0 0 #ffffff,
-      40px 10px 0 0 #ffffff,
-      90px -20px 0 0 #ffffff,
-      150px 30px 0 0 #ffffff,
-      220px -10px 0 0 #ffffff,
-      280px 40px 0 0 #ffffff,
-      350px -30px 0 0 #ffffff,
-      420px 20px 0 0 #ffffff,
-      480px -15px 0 0 #ffffff,
-      540px 38px 0 0 #ffffff,
-      600px -25px 0 0 #ffffff;
-  opacity: 0.6;
-  animation: twinkle 3.2s ease-in-out infinite alternate;
+/* 밤하늘에서 쓰던 별은 비활성화 */
+.bg-stars {
+  display: none;
 }
 
-/* 대형 별 레이어 */
-.bg-stars--2::before {
-  content: "";
-  position: absolute;
-  top: 18%;
-  left: 5%;
-  width: 3px;
-  height: 3px;
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow:
-      60px 50px 0 0 #ffffff,
-      140px 20px 0 0 #ffffff,
-      210px 70px 0 0 #ffffff,
-      290px 10px 0 0 #ffffff,
-      360px 60px 0 0 #ffffff,
-      430px 25px 0 0 #ffffff,
-      510px 55px 0 0 #ffffff,
-      590px 15px 0 0 #ffffff;
-  opacity: 0.8;
-  animation: twinkle 4.8s ease-in-out infinite alternate;
-}
-
-/* 별 반짝임 */
-@keyframes twinkle {
-  0% {
-    opacity: 0.15;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-1px);
-  }
-  100% {
-    opacity: 0.3;
-    transform: translateY(0);
-  }
-}
 /* ==========================================
-   Glass Panels (Header / Hero / Cards)
+   Light Glass Panels (Header / Hero / Cards)
    ========================================== */
 
-/* 공통 글래스 패널 스타일 */
 .site-header,
 .hero,
 .cat-card,
@@ -498,73 +450,17 @@ img{ max-width:100%; height:auto; }
 .section-card,
 .bk-card {
   background:
-    radial-gradient(circle at 0 0, rgba(148,163,184,0.22), transparent 55%)
-    rgba(15,23,42,0.78);
-  border: 1px solid rgba(148,163,184,0.35);
+    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.95), transparent 55%)
+    rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(209, 213, 219, 0.9);
   box-shadow:
-    0 18px 40px rgba(15,23,42,0.85),
-    0 0 0 1px rgba(15,23,42,0.9);
+    0 16px 40px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
 
-/* 헤더 바 높이감 + 구분선 정리 */
-.site-header__bar {
-  padding: 12px 0;
-}
-
-/* 헤더 텍스트/링크 컬러 다크 배경에 맞게 */
-.site-header .brand {
-  color: #f9fafb;
-}
-.site-header .brand:hover {
-  color: #e5e7eb;
-}
-
-.nav a {
-  color: #e5e7eb;
-  text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 14px;
-}
-.nav a:hover {
-  background: rgba(148,163,184,0.18);
-}
-.nav a.active {
-  background: linear-gradient(135deg, #22c55e, #22c55e);
-  color: #0b1120;
-  box-shadow: 0 0 0 1px rgba(34,197,94,0.6), 0 10px 25px rgba(34,197,94,0.45);
-}
-
-/* 헤더 오른쪽 로그인/언어 영역 컬러 조정 */
-.header-ops a {
-  color: #e5e7eb;
-}
-.header-ops a:hover {
-  color: #ffffff;
-}
-
-.lang-toggle {
-  border-color: rgba(148,163,184,0.5);
-  color: #e5e7eb;
-}
-.lang-menu {
-  background: rgba(15,23,42,0.96);
-  border-color: rgba(148,163,184,0.4);
-}
-.lang-menu a {
-  color: #e5e7eb;
-}
-.lang-menu a:hover {
-  background: rgba(148,163,184,0.22);
-}
-.lang-menu a.active {
-  background: linear-gradient(135deg, #22c55e, #22c55e);
-  color: #0b1120;
-}
-
-/* Hero 타이포 / 여백 조정 – 포트폴리오 느낌 */
+/* Hero 타이포를 아침 느낌으로 조정 */
 .hero {
   border-radius: 24px;
   padding: 72px 32px;
@@ -574,46 +470,46 @@ img{ max-width:100%; height:auto; }
   font-size: 44px;
   font-weight: 800;
   letter-spacing: -0.04em;
-  color: #f9fafb;
+  color: #111827;
 }
 .hero__subtitle {
   margin-top: 12px;
   font-size: 16px;
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 /* 섹션 타이틀/서브텍스트 컬러 */
 .section-title {
-  color: #e5e7eb;
+  color: #111827;
 }
 .section-sub {
-  color: #94a3b8;
+  color: #6b7280;
 }
 
-/* 카테고리 카드 – Glass + hover 올라오는 효과 */
+/* 카테고리 카드 – 살짝 떠오르는 효과 */
 .cat-card {
   border-radius: 18px;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 .cat-card__body {
-  color: #e5e7eb;
+  color: #111827;
 }
 .cat-card__title {
-  color: #f9fafb;
+  color: #111827;
 }
 .cat-card__desc {
-  color: #9ca3af;
+  color: #6b7280;
 }
 .cat-card__link {
   background: linear-gradient(135deg, #22c55e, #16a34a);
   color: #0b1120;
   border: none;
-  box-shadow: 0 10px 25px rgba(34,197,94,0.45);
+  box-shadow: 0 10px 25px rgba(34,197,94,0.35);
 }
 .cat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 24px 60px rgba(15,23,42,0.95);
-  border-color: rgba(226,232,240,0.5);
+  box-shadow: 0 24px 60px rgba(15,23,42,0.25);
+  border-color: rgba(148,163,184,0.6);
 }
 
 /* Today Pick 카드 */
@@ -621,23 +517,23 @@ img{ max-width:100%; height:auto; }
   border-radius: 18px;
 }
 .pick-card__title {
-  color: #f9fafb;
+  color: #111827;
 }
 .pick-card__desc {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 /* Note (오늘의 한 줄) */
 .note p {
-  color: #e5e7eb;
+  color: #111827;
 }
 .note cite {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
-/* Footer도 살짝 어두운 유리 느낌으로 */
+/* Footer는 살짝 투명하게 */
 .site-footer {
-  background: rgba(15,23,42,0.9);
-  border-top: 1px solid rgba(148,163,184,0.35);
-  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.92);
+  border-top: 1px solid rgba(209, 213, 219, 0.9);
+  color: #6b7280;
 }
