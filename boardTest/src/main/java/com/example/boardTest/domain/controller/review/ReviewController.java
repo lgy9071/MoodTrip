@@ -60,9 +60,8 @@ public class ReviewController {
 
     @PostMapping
     public String create(@ModelAttribute ReviewCreateRequest dto, HttpSession session) {
+
         User currentUser = (User) session.getAttribute("LOGIN_USER");
-        if (currentUser == null)
-            throw new IllegalStateException("로그인이 필요합니다.");
 
         reviewService.saveReview(
                 dto.getTitle(),
@@ -77,13 +76,12 @@ public class ReviewController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable("id") Long id, Model model) {
+    public String detail(@PathVariable Long id, Model model) {
         Review review = reviewService.getReview(id);
         model.addAttribute("review", review);
         return "reviews/detail";
     }
 
-    // 삭제
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, HttpSession session) {
         User currentUser = (User) session.getAttribute("LOGIN_USER");
@@ -104,13 +102,13 @@ public class ReviewController {
         return "reviews/edit";
     }
 
-    // 수정 처리
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id,
                          @ModelAttribute ReviewUpdateRequest dto,
                          HttpSession session) {
 
         User currentUser = (User) session.getAttribute("LOGIN_USER");
+
         reviewService.updateReview(
                 id,
                 dto.getTitle(),

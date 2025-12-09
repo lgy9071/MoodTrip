@@ -19,14 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import java.net.URLEncoder;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -35,40 +29,31 @@ import java.util.stream.Collectors;
 public class TripController {
 
     private final TripService tripService;
-
-    // 세션 키 이름(프로젝트에서 사용하는 키)
     public static final String LOGIN_USER_ATTR = "LOGIN_USER";
 
     @GetMapping
     public String list(@RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "10") int size,
                        Model model) {
+
         Page<TripPlan> plans = tripService.listPlans(page, size);
         model.addAttribute("plans", plans);
         return "trips/list";
     }
 
     @GetMapping("/new")
-    public String newForm(Model model,
-                          RedirectAttributes ra,
-                          @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
-
-        if (loginUser == null) {
-            String next = URLEncoder.encode("/trips/new", StandardCharsets.UTF_8);
-            ra.addFlashAttribute("msg", "로그인이 필요합니다.");
-            return "redirect:/login?next=" + next;
-        }
+    public String newForm(Model model) {
 
         TripPlanCreateDTO form = new TripPlanCreateDTO();
         form.setTitle("");
         form.setStartDate(LocalDate.now());
         form.setEndDate(LocalDate.now().plusDays(2));
-        if (form.getStops() == null) form.setStops(new ArrayList<>());
-        // 초기 1행(빈)
+        form.setStops(new ArrayList<>());
         form.getStops().add(new NewStopDTO(1, "", null, null, BigDecimal.ZERO, TripCostCategory.OTHER, null));
 
         model.addAttribute("form", form);
         model.addAttribute("categories", TripCostCategory.values());
+
         return "trips/new";
     }
 
@@ -77,13 +62,8 @@ public class TripController {
                          @RequestParam("thumbnail") MultipartFile multipartFile,
                          BindingResult br,
                          RedirectAttributes ra,
-                         Model model,
-                         @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
-
-        if (loginUser == null) {
-            ra.addFlashAttribute("msg", "로그인이 필요합니다.");
-            return "redirect:/login";
-        }
+                         @SessionAttribute(name = LOGIN_USER_ATTR) User loginUser,
+                         Model model) {
 
         if (!form.isDateRangeValid()) {
             br.rejectValue("endDate", "dateRange", "종료일은 시작일 이후여야 합니다.");
@@ -101,15 +81,13 @@ public class TripController {
             plan.setThumbnailUrl(thumbUrl);
         }
 
-        // 여러 경유지 저장 (이미지 포함)
         if (form.getStops() != null) {
             for (NewStopDTO s : form.getStops()) {
                 if (s.getPlaceName() == null || s.getPlaceName().isBlank()) continue;
 
                 String imageUrl = null;
-                MultipartFile image = s.getImage();
-                if (image != null && !image.isEmpty()) {
-                    imageUrl = tripService.saveTripImage(plan.getId(), image);
+                if (s.getImage() != null && !s.getImage().isEmpty()) {
+                    imageUrl = tripService.saveTripImage(plan.getId(), s.getImage());
                 }
 
                 TripStopCreateDTO dto = new TripStopCreateDTO(
@@ -120,8 +98,9 @@ public class TripController {
                         s.getCost() != null ? s.getCost() : BigDecimal.ZERO,
                         s.getCategory() != null ? s.getCategory() : TripCostCategory.OTHER,
                         imageUrl,
-                        s.getImage() // multipartFile 전달
+                        s.getImage()
                 );
+
                 tripService.addStop(plan.getId(), dto, loginUser);
             }
         }
@@ -131,7 +110,7 @@ public class TripController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable(name = "id") Long id,
+    public String detail(@PathVariable Long id,
                          Model model,
                          @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
 
@@ -147,9 +126,7 @@ public class TripController {
 
         Map<Integer, List<TripStop>> stopsByDay = stops.stream()
                 .collect(Collectors.groupingBy(TripStop::getDayOrder, TreeMap::new, Collectors.toList()));
-        model.addAttribute("stopsByDay", stopsByDay);
 
-        // 차트용 값은 JS에서 NaN 방지 위해 Double로
         List<String> catLabels = new ArrayList<>();
         List<Double> catValues = new ArrayList<>();
         for (TripCostCategory c : TripCostCategory.values()) {
@@ -161,18 +138,16 @@ public class TripController {
                 case SHOPPING -> "쇼핑";
                 default -> "기타";
             });
-            BigDecimal v = catCost.getOrDefault(c, BigDecimal.ZERO);
-            catValues.add(v == null ? 0d : v.doubleValue());
+            catValues.add(catCost.getOrDefault(c, BigDecimal.ZERO).doubleValue());
         }
 
         model.addAttribute("plan", plan);
         model.addAttribute("stops", stops);
-        model.addAttribute("stopForm",
-                           new TripStopCreateDTO(1, "", "", "", BigDecimal.ZERO, TripCostCategory.OTHER, null, null));
+        model.addAttribute("stopsByDay", stopsByDay);
+        model.addAttribute("stopForm", new TripStopCreateDTO(1, "", "", "", BigDecimal.ZERO, TripCostCategory.OTHER, null, null));
         model.addAttribute("totalCost", totalCost);
         model.addAttribute("dayCost", dayCost);
         model.addAttribute("isOwner", isOwner);
-
         model.addAttribute("categories", TripCostCategory.values());
         model.addAttribute("catLabels", catLabels);
         model.addAttribute("catValues", catValues);
@@ -181,17 +156,12 @@ public class TripController {
     }
 
     @PostMapping("/{id}/stops")
-    public String addStop(@PathVariable("id") Long id,
+    public String addStop(@PathVariable Long id,
                           @Valid @ModelAttribute("stopForm") TripStopCreateDTO dto,
                           BindingResult br,
                           RedirectAttributes ra,
                           Model model,
-                          @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
-
-        if (loginUser == null) {
-            ra.addFlashAttribute("msg", "로그인이 필요합니다.");
-            return "redirect:/login";
-        }
+                          @SessionAttribute(name = LOGIN_USER_ATTR) User loginUser) {
 
         if (br.hasErrors()) {
             TripPlan plan = tripService.findPlan(id);
@@ -201,13 +171,11 @@ public class TripController {
             return "trips/detail";
         }
 
-        // 이미지 저장
         String imageUrl = null;
         if (dto.image() != null && !dto.image().isEmpty()) {
             imageUrl = tripService.saveTripImage(id, dto.image());
         }
 
-        // imageUrl 주입해서 다시 DTO 구성
         TripStopCreateDTO withUrl = new TripStopCreateDTO(
                 dto.dayOrder(),
                 dto.placeName(),
@@ -225,14 +193,9 @@ public class TripController {
     }
 
     @PostMapping("/{id}/delete")
-    public String deletePlan(@PathVariable("id") Long id,
+    public String deletePlan(@PathVariable Long id,
                              RedirectAttributes ra,
-                             @SessionAttribute(name = LOGIN_USER_ATTR, required = false) User loginUser) {
-
-        if (loginUser == null) {
-            ra.addFlashAttribute("msg", "로그인이 필요합니다.");
-            return "redirect:/login";
-        }
+                             @SessionAttribute(name = LOGIN_USER_ATTR) User loginUser) {
 
         tripService.deletePlan(id, loginUser);
         ra.addFlashAttribute("msg", "여행 계획을 삭제했습니다.");
