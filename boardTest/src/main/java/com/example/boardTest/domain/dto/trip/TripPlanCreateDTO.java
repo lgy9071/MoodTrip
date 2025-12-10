@@ -1,5 +1,6 @@
 package com.example.boardTest.domain.dto.trip;
 
+import com.example.boardTest.domain.entity.trip.TripCostCategory;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -49,4 +50,24 @@ public class TripPlanCreateDTO {
         }
         return true;
     }
+
+    public void initIfEmpty() {
+        if (this.stops == null) {
+            this.stops = new ArrayList<>();
+        }
+        if (this.stops.isEmpty()) {
+            this.stops.add(
+                    new NewStopDTO(
+                            1,        // dayOrder
+                            "",       // placeName
+                            null,     // address
+                            null,     // memo
+                            BigDecimal.ZERO,
+                            TripCostCategory.OTHER,
+                            null      // image
+                    )
+            );
+        }
+    }
+
 }

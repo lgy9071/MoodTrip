@@ -17,18 +17,14 @@ public class ReviewLikeRestController {
     private final ReviewLikeService likeService;
 
     @PostMapping("/{id}/like")
-    public ResponseEntity<Map<String, Object>> toggleLike(
-            @PathVariable Long id,
-            HttpSession session) {
+    public Map<String, Object> toggleLike(@PathVariable Long id,
+                                          @SessionAttribute(name = "LOGIN_USER") User me) {
 
-        User currentUser = (User) session.getAttribute("LOGIN_USER");
+        boolean liked = likeService.toggleLike(id, me);
 
-        boolean liked = likeService.toggleLike(id, currentUser);
-        long likeCount = likeService.countLikes(id);
-
-        return ResponseEntity.ok(Map.of(
+        return Map.of(
                 "liked", liked,
-                "likeCount", likeCount
-        ));
+                "likeCount", likeService.countLikes(id)
+        );
     }
 }

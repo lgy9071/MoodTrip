@@ -21,10 +21,6 @@ public class TripAiController {
 
     @PostMapping("/suggest-stops")
     public List<SuggestedStopDTO> suggestStops(@Valid @RequestBody StopSuggestRequest req) {
-        // ※ 여기서는 로그인 필수 아님(작성 화면이므로). 필요하면 세션 체크 추가.
-        if (req.getEndDate().isBefore(req.getStartDate())) {
-            throw new IllegalArgumentException("종료일은 시작일 이후여야 합니다.");
-        }
         return suggestService.suggest(req);
     }
 }
