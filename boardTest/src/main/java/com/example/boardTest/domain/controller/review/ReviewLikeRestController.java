@@ -16,6 +16,9 @@ public class ReviewLikeRestController {
 
     private final ReviewLikeService likeService;
 
+    /**
+     * 리뷰 좋아요 토글
+     */
     @PostMapping("/{id}/like")
     public Map<String, Object> toggleLike(@PathVariable Long id,
                                           @SessionAttribute(name = "LOGIN_USER") User me) {

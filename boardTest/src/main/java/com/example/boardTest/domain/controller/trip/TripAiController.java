@@ -19,8 +19,15 @@ public class TripAiController {
 
     private final TripAiSuggestService suggestService;
 
+    /**
+     * AI 기반 경유지 추천
+     * - 일정 기반 추천
+     * - 로그인 비필수
+     */
     @PostMapping("/suggest-stops")
-    public List<SuggestedStopDTO> suggestStops(@Valid @RequestBody StopSuggestRequest req) {
+    public List<SuggestedStopDTO> suggestStops(
+            @Valid @RequestBody StopSuggestRequest req) {
+
         return suggestService.suggest(req);
     }
 }

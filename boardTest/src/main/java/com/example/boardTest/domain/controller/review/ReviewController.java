@@ -27,6 +27,12 @@ public class ReviewController {
     private final TripService tripService;
     private final PlaceService placeService;
 
+    /**
+     * 리뷰 목록
+     * - 정렬
+     * - 카테고리 필터
+     * - 내 리뷰만 보기
+     */
     @GetMapping
     public String list(@RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "5") int size,
@@ -36,8 +42,11 @@ public class ReviewController {
                        @SessionAttribute(name = "LOGIN_USER") User me,
                        Model model) {
 
-        Page<ReviewListDTO> pg = reviewService.getFilteredReviews(
-                page, size, sort, category, mine ? me : null);
+        Page<ReviewListDTO> pg =
+                reviewService.getFilteredReviews(
+                        page, size, sort, category,
+                        mine ? me : null
+                );
 
         model.addAttribute("reviewPage", pg);
         model.addAttribute("currentPage", pg.getNumber());
@@ -49,14 +58,23 @@ public class ReviewController {
         return "reviews/list";
     }
 
+    /**
+     * 리뷰 작성 폼
+     * - 대상 선택용 데이터 제공
+     */
     @GetMapping("/new")
     public String newForm(Model model) {
+
         model.addAttribute("movies", postService.findAll());
         model.addAttribute("trips", tripService.findAllPlans());
         model.addAttribute("places", placeService.findAllPlaces());
+
         return "reviews/new";
     }
 
+    /**
+     * 리뷰 등록
+     */
     @PostMapping
     public String create(@Valid @ModelAttribute ReviewCreateRequest dto,
                          @SessionAttribute(name = "LOGIN_USER") User me) {
@@ -74,12 +92,22 @@ public class ReviewController {
         return "redirect:/reviews";
     }
 
+    /**
+     * 리뷰 상세
+     */
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model) {
-        model.addAttribute("review", reviewService.getReview(id));
+    public String detail(@PathVariable Long id,
+                         Model model) {
+
+        model.addAttribute("review",
+                reviewService.getReview(id));
+
         return "reviews/detail";
     }
 
+    /**
+     * 리뷰 삭제
+     */
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id,
                          @SessionAttribute(name = "LOGIN_USER") User me) {
@@ -88,4 +116,3 @@ public class ReviewController {
         return "redirect:/reviews";
     }
 }
-

@@ -22,6 +22,10 @@ public class ReviewRestController {
     private final TripService tripService;
     private final PlaceService placeService;
 
+    /**
+     * 리뷰 대상 검색 API
+     * - 영화 / 여행 / 장소
+     */
     @GetMapping("/search-targets")
     public List<Map<String, Object>> searchTargets(
             @RequestParam String category,
@@ -30,27 +34,29 @@ public class ReviewRestController {
         List<Map<String, Object>> results = new ArrayList<>();
 
         switch (category) {
-            case "movie" -> postService.search(keyword).forEach(post -> {
-                results.add(Map.of(
-                        "id", post.getId(),
-                        "name", post.getTitle()
-                ));
-            });
 
-            case "trip" -> tripService.search(keyword).forEach(plan -> {
-                results.add(Map.of(
-                        "id", plan.getId(),
-                        "name", plan.getTitle()
-                ));
-            });
+            case "movie" ->
+                    postService.search(keyword).forEach(post ->
+                            results.add(Map.of(
+                                    "id", post.getId(),
+                                    "name", post.getTitle()
+                            )));
 
-            case "place" -> placeService.search(keyword).forEach(place -> {
-                results.add(Map.of(
-                        "id", place.getId(),
-                        "name", place.getName()
-                ));
-            });
+            case "trip" ->
+                    tripService.search(keyword).forEach(plan ->
+                            results.add(Map.of(
+                                    "id", plan.getId(),
+                                    "name", plan.getTitle()
+                            )));
+
+            case "place" ->
+                    placeService.search(keyword).forEach(place ->
+                            results.add(Map.of(
+                                    "id", place.getId(),
+                                    "name", place.getName()
+                            )));
         }
+
         return results;
     }
 }
