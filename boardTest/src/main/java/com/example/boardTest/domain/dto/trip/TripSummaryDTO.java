@@ -14,19 +14,36 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class TripSummaryDTO extends Base {
+
+    // 여행 ID
     private Long id;
+
+    // 여행 제목
     private String title;
+
+    // 시작일
     private LocalDate startDate;
+
+    // 종료일
     private LocalDate endDate;
+
+    // 작성자 이름
     private String ownerName;
 
+    /**
+     * Entity → DTO 변환
+     */
     public static TripSummaryDTO fromEntity(TripPlan plan) {
         return TripSummaryDTO.builder()
                 .id(plan.getId())
                 .title(plan.getTitle())
                 .startDate(plan.getStartDate())
                 .endDate(plan.getEndDate())
-                .ownerName(plan.getOwner() != null ? plan.getOwner().getUsername() : "알 수 없음")
+                .ownerName(
+                        plan.getOwner() != null
+                                ? plan.getOwner().getUsername()
+                                : "알 수 없음"
+                )
                 .build();
     }
 }
