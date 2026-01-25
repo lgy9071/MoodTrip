@@ -14,21 +14,41 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class TripAiSuggestService {
 
-    private static final Logger log = LoggerFactory.getLogger(TripAiSuggestService.class);
+    private static final Logger log =
+            LoggerFactory.getLogger(TripAiSuggestService.class);
+
+    // OpenAI SDK Client
     private final com.openai.client.OpenAIClient openAi;
+
+    // JSON 파싱용 ObjectMapper (유연한 파싱 설정)
     private final ObjectMapper om = new ObjectMapper()
-            .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            .configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS, true);
+            .configure(
+                    com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                    false
+            )
+            .configure(
+                    com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS,
+                    true
+            );
 
+    /**
+     * AI 기반 여행 경유지 추천 메인 메서드
+     */
     public List<SuggestedStopDTO> suggest(StopSuggestRequest req) {
-        int days = (int)(ChronoUnit.DAYS.between(req.getStartDate(), req.getEndDate()) + 1);
 
-        // 1) 프롬프트
+        int days =
+                (int) (ChronoUnit.DAYS.between(
+                        req.getStartDate(),
+                        req.getEndDate()
+                ) + 1);
+
+        // 1) 프롬프트 생성
         String prompt = """
             You are a Korean travel planner.
             Propose 2 stops per day and RETURN ONLY a JSON array (no markdown, no explanations).
@@ -47,66 +67,78 @@ public class TripAiSuggestService {
             - BudgetPerDay(₩): %s
             """.formatted(
                 days,
-                nz(req.getCity()), nz(req.getTheme()),
-                req.getStartDate(), req.getEndDate(),
-                req.getBudgetPerDay() == null ? "80000" : req.getBudgetPerDay().toString()
+                nz(req.getCity()),
+                nz(req.getTheme()),
+                req.getStartDate(),
+                req.getEndDate(),
+                req.getBudgetPerDay() == null
+                        ? "80000"
+                        : req.getBudgetPerDay().toString()
         );
 
-        // 2) Responses API 호출
-        var params = com.openai.models.responses.ResponseCreateParams.builder()
-                .model("gpt-4o-mini")  // 문자열로 지정
-                .input(prompt)
-                .build();
+        // 2) OpenAI Responses API 파라미터 구성
+        var params =
+                com.openai.models.responses.ResponseCreateParams.builder()
+                        .model("gpt-4o-mini")
+                        .input(prompt)
+                        .build();
 
         try {
+            // 3) API 호출
             var resp = openAi.responses().create(params);
 
-            // 3) SDK 버전 차이를 흡수하는 안전 추출
+            // 4) SDK 버전에 의존하지 않는 텍스트 추출
             String text = safeExtractText(resp);
             log.debug("AI raw text: {}", text);
-            // 4) 혹시 코드블록/설명 섞여도 JSON 배열만 뽑아내기
+
+            // 5) JSON 배열 부분만 추출
             String json = stripToJsonArray(text);
             log.debug("AI json {}", json);
-            // 5) JSON → DTO
+
+            // 6) JSON → DTO 파싱
             List<SuggestedStopDTO> raw = parseJson(json);
 
-            // 6) 서버 검증/보정
+            // 7) 서버단 검증 및 보정
             return sanitize(raw, days);
 
         } catch (Exception e) {
-            // 실패 시 더미로 폴백
+            // 실패 시 fallback
             log.warn("AI suggest failed, fallback, reason={}", e.toString());
             return fallbackRules(req);
         }
     }
 
-    // ----------------- 헬퍼들 -----------------
+    // ----------------- 헬퍼 메서드 -----------------
 
-    /** SDK 버전에 상관없이 텍스트를 최대한 안전하게 추출 */
+    /**
+     * SDK 버전에 관계없이 텍스트를 최대한 안전하게 추출
+     */
     private String safeExtractText(Object response) {
-        // 1) outputText(): Optional<String>
         try {
             var m = response.getClass().getMethod("outputText");
             Object v = m.invoke(response);
-            if (v instanceof java.util.Optional<?> opt && opt.isPresent()) {
+            if (v instanceof Optional<?> opt && opt.isPresent()) {
                 return String.valueOf(opt.get());
             }
         } catch (Exception ignore) {}
 
-        // 2) output(): List<...> → 각 item.content().text().value()
         try {
-            var output = (java.util.List<?>) response.getClass().getMethod("output").invoke(response);
+            var output =
+                    (List<?>) response.getClass().getMethod("output").invoke(response);
             if (output != null) {
                 StringBuilder sb = new StringBuilder();
                 for (Object item : output) {
                     try {
-                        var content = (java.util.List<?>) item.getClass().getMethod("content").invoke(item);
+                        var content =
+                                (List<?>) item.getClass().getMethod("content").invoke(item);
                         if (content != null) {
                             for (Object c : content) {
                                 try {
-                                    Object text = c.getClass().getMethod("text").invoke(c);
+                                    Object text =
+                                            c.getClass().getMethod("text").invoke(c);
                                     if (text != null) {
-                                        Object val = text.getClass().getMethod("value").invoke(text);
+                                        Object val =
+                                                text.getClass().getMethod("value").invoke(text);
                                         if (val != null) sb.append(val.toString());
                                     }
                                 } catch (Exception ignore2) {}
@@ -118,16 +150,16 @@ public class TripAiSuggestService {
             }
         } catch (Exception ignore) {}
 
-        // 3) 실패 시 빈 문자열
         return "";
     }
 
-    /** 백틱/설명 제거하고 순수 JSON 배열만 추출 */
+    /**
+     * 코드 블록/설명 제거 후 순수 JSON 배열만 추출
+     */
     private String stripToJsonArray(String text) {
         if (text == null) return "[]";
         String t = text.trim();
 
-        // 코드펜스 제거 ```json ... ```
         if (t.startsWith("```")) {
             int first = t.indexOf('\n');
             int last = t.lastIndexOf("```");
@@ -136,7 +168,6 @@ public class TripAiSuggestService {
             }
         }
 
-        // 배열 경계만 남기기
         int start = t.indexOf('[');
         int end = t.lastIndexOf(']');
         if (start >= 0 && end > start) {
@@ -145,6 +176,9 @@ public class TripAiSuggestService {
         return t;
     }
 
+    /**
+     * JSON 문자열을 SuggestedStopDTO 리스트로 변환
+     */
     private List<SuggestedStopDTO> parseJson(String json) throws IOException {
         if (json == null || json.isBlank()) return List.of();
         JavaType t = om.getTypeFactory()
@@ -152,20 +186,43 @@ public class TripAiSuggestService {
         return om.readValue(json, t);
     }
 
+    /**
+     * AI 응답값 검증 및 보정
+     */
     private List<SuggestedStopDTO> sanitize(List<SuggestedStopDTO> in, int days) {
         if (in == null) return List.of();
         return in.stream().map(s -> {
-            int d = s.dayOrder() == null ? 1 : Math.min(Math.max(1, s.dayOrder()), days);
-            BigDecimal cost = s.cost() == null ? BigDecimal.ZERO : s.cost().max(BigDecimal.ZERO);
-            TripCostCategory cat = s.category() == null ? TripCostCategory.OTHER : s.category();
-            return new SuggestedStopDTO(d, nz(s.placeName()), s.address(), nz(s.memo()), cost, cat);
+            int d = s.dayOrder() == null
+                    ? 1
+                    : Math.min(Math.max(1, s.dayOrder()), days);
+            BigDecimal cost =
+                    s.cost() == null
+                            ? BigDecimal.ZERO
+                            : s.cost().max(BigDecimal.ZERO);
+            TripCostCategory cat =
+                    s.category() == null
+                            ? TripCostCategory.OTHER
+                            : s.category();
+            return new SuggestedStopDTO(
+                    d,
+                    nz(s.placeName()),
+                    s.address(),
+                    nz(s.memo()),
+                    cost,
+                    cat
+            );
         }).toList();
     }
 
-    private static String nz(String s){ return (s==null) ? "" : s.trim(); }
+    private static String nz(String s) {
+        return (s == null) ? "" : s.trim();
+    }
 
+    /**
+     * AI 실패 시 fallback 규칙
+     */
     private List<SuggestedStopDTO> fallbackRules(StopSuggestRequest req) {
-        // <-- 여기에 기존 더미 로직 그대로 두세요
+        // <-- 기존 더미 로직 그대로 유지
         return List.of();
     }
 }

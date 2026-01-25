@@ -10,13 +10,27 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    // 사용자 Repository
     private final UserRepository repo;
+
+    // 비밀번호 암호화용 인코더
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public User register(String username, String password, String name, String email) {
+    /**
+     * 회원가입
+     * - 아이디/이메일 중복 검사
+     * - 비밀번호 암호화
+     */
+    public User register(String username,
+                         String password,
+                         String name,
+                         String email) {
+
         repo.findByUsername(username).ifPresent(u -> {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         });
+
         repo.findByEmail(email).ifPresent(u -> {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         });
@@ -32,13 +46,22 @@ public class UserService {
         return repo.save(user);
     }
 
+    /**
+     * 로그인
+     * - 아이디 존재 여부 확인
+     * - 비밀번호 검증
+     */
     public User login(String username, String password) {
+
         User user = repo.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
+                .orElseThrow(() ->
+                        new IllegalArgumentException("존재하지 않는 아이디입니다.")
+                );
 
         if (!encoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 올바르지 않습니다.");
         }
+
         return user;
     }
 }
