@@ -226,3 +226,17 @@ public class TripAiSuggestService {
         return List.of();
     }
 }
+
+/**
+ * 역할
+여행 일정 기반 경유지 AI 추천
+OpenAI Responses API 연동
+응답 검증 및 보정
+
+ * 핵심 설계 의도
+AI 응답은 항상 불완전하거나 예측 불가능하다고 가정하고 설계했습니다.
+JSON만 반환하도록 프롬프트 강제
+SDK 버전 차이를 고려한 텍스트 추출
+잘못된 값(dayOrder, cost, category) 서버단 보정
+실패 시 fallback 로직 제공
+ */
