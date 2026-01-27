@@ -141,7 +141,7 @@ public class TripController {
      * 여행 계획 상세 조회
      */
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id,
+    public String detail(@PathVariable(name = "id") Long id,
                          Model model,
                          @SessionAttribute(name = LOGIN_USER_ATTR) User loginUser) {
 
@@ -215,7 +215,7 @@ public class TripController {
      * 경유지 추가
      */
     @PostMapping("/{id}/stops")
-    public String addStop(@PathVariable Long id,
+    public String addStop(@PathVariable(name = "id") Long id,
                           @Valid @ModelAttribute("stopForm") TripStopCreateDTO dto,
                           @SessionAttribute(name = LOGIN_USER_ATTR) User loginUser) {
 
@@ -243,7 +243,7 @@ public class TripController {
      * 여행 계획 삭제 (작성자만 가능)
      */
     @PostMapping("/{id}/delete")
-    public String deletePlan(@PathVariable Long id,
+    public String deletePlan(@PathVariable(name = "id") Long id,
                              @SessionAttribute(name = LOGIN_USER_ATTR) User loginUser) {
 
         tripService.deletePlan(id, loginUser);

@@ -14,14 +14,14 @@ public class TripRestController {
     public static final String LOGIN_USER_ATTR = "LOGIN_USER";
 
     @DeleteMapping("/stops/{stopId}")
-    public void deleteStop(@PathVariable Long stopId,
+    public void deleteStop(@PathVariable(name = "stopId") Long stopId,
                            @SessionAttribute(name = LOGIN_USER_ATTR) User loginUser) {
         tripService.removeStop(stopId);
     }
 
     @PatchMapping("/stops/{stopId}/day")
-    public void moveDay(@PathVariable Long stopId,
-                        @RequestParam int newDay,
+    public void moveDay(@PathVariable(name = "stopId") Long stopId,
+                        @RequestParam(name = "newDay") int newDay,
                         @SessionAttribute(name = LOGIN_USER_ATTR) User loginUser) {
         tripService.moveDay(stopId, newDay);
     }
