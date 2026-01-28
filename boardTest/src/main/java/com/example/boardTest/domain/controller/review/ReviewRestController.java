@@ -28,8 +28,8 @@ public class ReviewRestController {
      */
     @GetMapping("/search-targets")
     public List<Map<String, Object>> searchTargets(
-            @RequestParam String category,
-            @RequestParam String keyword) {
+            @RequestParam(name = "category") String category,
+            @RequestParam(name = "keyword") String keyword) {
 
         List<Map<String, Object>> results = new ArrayList<>();
 

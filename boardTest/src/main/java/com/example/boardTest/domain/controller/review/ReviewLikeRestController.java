@@ -20,7 +20,7 @@ public class ReviewLikeRestController {
      * 리뷰 좋아요 토글
      */
     @PostMapping("/{id}/like")
-    public Map<String, Object> toggleLike(@PathVariable Long id,
+    public Map<String, Object> toggleLike(@PathVariable(name = "id") Long id,
                                           @SessionAttribute(name = "LOGIN_USER") User me) {
 
         boolean liked = likeService.toggleLike(id, me);

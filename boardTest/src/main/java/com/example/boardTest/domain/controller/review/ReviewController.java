@@ -96,7 +96,7 @@ public class ReviewController {
      * 리뷰 상세
      */
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id,
+    public String detail(@PathVariable(name = "id") Long id,
                          Model model) {
 
         model.addAttribute("review",
@@ -109,7 +109,7 @@ public class ReviewController {
      * 리뷰 삭제
      */
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id,
+    public String delete(@PathVariable(name = "id") Long id,
                          @SessionAttribute(name = "LOGIN_USER") User me) {
 
         reviewService.deleteReview(id, me);
