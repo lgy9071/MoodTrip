@@ -64,7 +64,7 @@ public class PlaceController {
      * 장소 등록 처리
      */
     @PostMapping
-    public String create(@ModelAttribute PlaceCreateRequest dto,
+    public String create(@ModelAttribute(name = "dto") PlaceCreateRequest dto,
                          @SessionAttribute(name = "LOGIN_USER") User me) {
 
         service.create(
@@ -84,7 +84,7 @@ public class PlaceController {
      * 장소 상세 페이지
      */
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id,
+    public String detail(@PathVariable(name = "id") Long id,
                          @SessionAttribute(name = "LOGIN_USER") User me,
                          Model model) {
 
