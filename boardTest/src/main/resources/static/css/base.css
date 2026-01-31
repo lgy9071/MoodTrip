@@ -1,39 +1,107 @@
-/* Reset-ish */
+/* =========================
+   Reset-ish
+   브라우저 기본 스타일을 최소화하고
+   레이아웃 계산을 예측 가능하게 만드는 기본 설정
+   ========================= */
+
+/* 모든 요소의 box-sizing을 border-box로 설정
+   → padding, border를 포함한 크기 계산 */
 * { box-sizing: border-box; }
+
+/* html, body를 화면 전체 높이로 설정
+   → 100vh 레이아웃이나 full-height UI에 필요 */
 html, body { height: 100%; }
+
+/* body 기본 스타일 정의 */
 body {
-  margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  color: #222;
-  background: #fff;
-  line-height: 1.5;
+  margin: 0; /* 브라우저 기본 margin 제거 */
+  font-family:
+    system-ui,               /* OS 기본 UI 폰트 */
+    -apple-system,           /* macOS/iOS */
+    "Segoe UI",               /* Windows */
+    Roboto,                   /* Android */
+    "Noto Sans KR",           /* 한글 가독성 */
+    Arial,
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;               /* 최종 fallback */
+  color: #222;                /* 기본 텍스트 색상 */
+  background: #fff;           /* 배경색 흰색 */
+  line-height: 1.5;           /* 기본 줄 간격 */
 }
 
-/* Theme tokens */
+/* =========================
+   Theme tokens
+   디자인 시스템용 CSS 변수
+   색상, radius, shadow 등 공통 토큰 정의
+   ========================= */
+
 :root{
-  --brand:#1976d2;
-  --brand-600:#1565c0;
-  --text:#222;
-  --muted:#667085;
-  --line:#e6e8ec;
-  --card:#ffffff;
-  --bg:#fafbfc;
-  --danger:#ff4d4f;
-  --radius:12px;
-  --shadow:0 8px 24px rgba(0,0,0,.06);
+  --brand:#1976d2;        /* 메인 브랜드 컬러 */
+  --brand-600:#1565c0;    /* 브랜드 강조 컬러 (hover 등) */
+  --text:#222;            /* 기본 텍스트 색 */
+  --muted:#667085;        /* 보조 텍스트 색 */
+  --line:#e6e8ec;         /* 구분선, border 색 */
+  --card:#ffffff;         /* 카드 배경색 */
+  --bg:#fafbfc;           /* 전체 배경용 연한 색 */
+  --danger:#ff4d4f;       /* 에러 / 위험 표시 색 */
+  --radius:12px;          /* 공통 border-radius */
+  --shadow:0 8px 24px rgba(0,0,0,.06); /* 카드 그림자 */
 }
 
-/* Utilities */
-.section{ margin: 24px 0; }
-.section-head{ margin-bottom: 12px; }
-.section-title{ margin:0 0 4px; font-size: 20px; font-weight: 700; }
-.section-sub{ margin:0; color: var(--muted); font-size: 14px; }
+/* =========================
+   Utilities
+   재사용 가능한 유틸리티 클래스 모음
+   ========================= */
 
+/* 섹션 간 기본 여백 */
+.section{ margin: 24px 0; }
+
+/* 섹션 헤더 하단 여백 */
+.section-head{ margin-bottom: 12px; }
+
+/* 섹션 제목 스타일 */
+.section-title{
+  margin:0 0 4px;         /* 위 0, 아래 4px */
+  font-size: 20px;        /* 제목 크기 */
+  font-weight: 700;       /* 굵은 제목 */
+}
+
+/* 섹션 부제목 스타일 */
+.section-sub{
+  margin:0;
+  color: var(--muted);    /* 흐린 텍스트 색 */
+  font-size: 14px;
+}
+
+/* 텍스트를 muted 색상으로 표시 */
 .muted{ color: var(--muted); }
-.top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.grid{ display:grid; gap:12px; }
+
+/* 상단 바 / 헤더용 flex 정렬
+   좌우 정렬 + 가운데 정렬 */
+.top{
+  display:flex;
+  align-items:center;           /* 수직 가운데 */
+  justify-content:space-between;/* 좌우 분산 */
+  gap:12px;                     /* 아이템 간격 */
+}
+
+/* 공통 grid 레이아웃 */
+.grid{
+  display:grid;
+  gap:12px;                     /* grid 아이템 간격 */
+}
+
+/* =========================
+   Message / Alert UI
+   정보 메시지 박스 스타일
+   ========================= */
 
 .msg{
-  background:#f5faff; border:1px solid #d6e9ff; color:#184a8b;
-  padding:10px 12px; border-radius:10px; margin: 8px 0;
+  background:#f5faff;           /* 연한 파란 배경 */
+  border:1px solid #d6e9ff;     /* 파란 테두리 */
+  color:#184a8b;                /* 텍스트 색 */
+  padding:10px 12px;            /* 내부 여백 */
+  border-radius:10px;           /* 둥근 모서리 */
+  margin: 8px 0;                /* 상하 여백 */
 }
